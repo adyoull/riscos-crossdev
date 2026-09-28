@@ -1,0 +1,11 @@
+| !Run for !Hello - an example from riscos-crossdev
+| hello is a UnixLib program converted to Absolute (AIF), so it needs
+| SharedUnixLibrary and ARMEABISupport (both from PackMan), not !SharedLibs.
+Set Hello$Dir <Obey$Dir>
+RMEnsure SharedUnixLibrary 1.16 IfThere System:Modules.SharedULib Then RMLoad System:Modules.SharedULib
+RMEnsure SharedUnixLibrary 1.16 Error Hello needs SharedUnixLibrary 1.16 or later. Install it with PackMan.
+RMEnsure ARMEABISupport 0 IfThere System:Modules.ARMEABISupport Then RMLoad System:Modules.ARMEABISupport
+RMEnsure ARMEABISupport 0 Error Hello needs the ARMEABISupport module. Install it with PackMan.
+| Set Hello$Name to be greeted by name, e.g. *Set Hello$Name Andrew
+| It prints and ends, so run it in a task window that stays open.
+TaskWindow "<Hello$Dir>.hello" -wimpslot 2048K -name "Hello" -display

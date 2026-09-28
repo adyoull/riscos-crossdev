@@ -1,0 +1,14 @@
+# The toolchain's sources: file, sha256, URL. toolchain/fetch.sh downloads
+# them into toolchain/dl (or $DL) and checks them.
+# GitHub's generated archives (codeload) have very occasionally changed; if
+# a checksum fails there, compare the unpacked tree with upstream before
+# changing the checksum.
+gccsdk-64c6f81.tar.gz d4a2e97e180ebc7b19e49e74b5ac60a71ed8bb3757b64128e7629cd27d9ab9b7 https://codeload.github.com/jhamby/riscos-gccsdk/tar.gz/64c6f81
+gcc-10.2.0.tar.gz 033ae71e7956b52e41045bf680ba8ae3c1be699dfb001073ec2665443c6ba2e2 https://codeload.github.com/gcc-mirror/gcc/tar.gz/refs/tags/releases/gcc-10.2.0
+binutils_2.30.orig.tar.xz 6e46b8aeae2f727a36f0bd9505e405768a72218f1796f0d09757d45209871ae6 https://archive.ubuntu.com/ubuntu/pool/main/b/binutils/binutils_2.30.orig.tar.xz
+gmp_6.2.1+dfsg.orig.tar.xz c6ba08e3f079260ab90ff44ab8801eae134cd62cd78f4aa56317c0e70daa40cb https://archive.ubuntu.com/ubuntu/pool/main/g/gmp/gmp_6.2.1+dfsg.orig.tar.xz
+mpfr4_4.1.0.orig.tar.xz 0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f https://archive.ubuntu.com/ubuntu/pool/main/m/mpfr4/mpfr4_4.1.0.orig.tar.xz
+mpclib3_1.2.1.orig.tar.gz 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459 https://archive.ubuntu.com/ubuntu/pool/main/m/mpclib3/mpclib3_1.2.1.orig.tar.gz
+# UnixLib 5.0.1 (github.com/adyoull/riscos-unixlib, tag v5.0.1): the whole
+# change set against GCCSDK's UnixLib, applied to the gccsdk tree.
+unixlib-riscos-5.0.1.diff 11d0c3cd61b592db5301ba1d2acc7c5b53fc246f2b1f264936f1550ff762a5b9 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.1/unixlib-riscos.diff

@@ -1,0 +1,2 @@
+| !Boot for !Hello
+If "<Hello$Dir>"="" Then Set Hello$Dir <Obey$Dir>

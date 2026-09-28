@@ -1,0 +1,18 @@
+Hello 1.0 for RISC OS
+=====================
+
+An example program from riscos-crossdev: a small C program cross-compiled
+on Linux with GCCSDK GCC 10.2, checked, and zipped with RISC OS filetypes.
+
+Double-click !Hello. A task window opens and shows:
+
+  Hello, world! This machine has been up for H:MM:SS.
+  checksum 1653a4a4
+
+To be greeted by name, type *Set Hello$Name <your name> first.
+
+Requirements: RISC OS 5 on an ARMv7 machine with VFP (a Raspberry Pi 2
+or later, or a Cortex-A8/A9 board); SharedUnixLibrary 1.16 or later and
+ARMEABISupport, both from PackMan.
+
+Source and licence: the riscos-crossdev repository, examples/hello (MIT).
