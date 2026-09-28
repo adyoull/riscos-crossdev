@@ -4,8 +4,13 @@
 #   include $(RCD_DIR)/riscos.mk
 #
 # Make's version of env.sh. Override any of these on the command line.
-RCD_DIR ?= $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
-RISCOS_TOOLCHAIN ?= $(RCD_DIR)/toolchain/env
+# (Immediate assignments: MAKEFILE_LIST changes as more files are included.)
+ifndef RCD_DIR
+RCD_DIR := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+endif
+ifndef RISCOS_TOOLCHAIN
+RISCOS_TOOLCHAIN := $(RCD_DIR)/toolchain/env
+endif
 FPU ?= vfpv3
 RISCOS_HOST := arm-riscos-gnueabihf
 RO_BIN := $(RISCOS_TOOLCHAIN)/bin
