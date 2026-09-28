@@ -44,3 +44,12 @@ Apart from those words, the output is byte-for-byte the same as before.
 ## Use
 
     elf2aif -e openttd openttd,ff8
+
+## In riscos-crossdev
+
+A copy of `tools/elf2aif` from the RISC OS OpenTTD port
+(github.com/adyoull/riscos-openttd, tag 14.1.5), so the toolchain builds
+without it. GPL version 2 or later (see the header of `elf2aif.c`). It needs
+GCCSDK's `gcc4/riscos/elf2aif/src` headers, which `toolchain/build.sh`
+unpacks; that script builds it into `$RISCOS_TOOLCHAIN/bin/elf2aif`. Take
+fixes from riscos-openttd rather than changing it here.
