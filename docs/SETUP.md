@@ -131,3 +131,16 @@ A new toolchain means a new tag of this repo. To move a port to it: check
 out the new tag, run `make prebuilt` into a fresh `RISCOS_TOOLCHAIN`,
 rebuild everything from clean (object files built by the old compiler, or
 against the old UnixLib headers, must not be mixed in), and run the checks.
+
+## 6. Making a release (maintainer)
+
+1. `make toolchain` in a clean clone at the commit to release (it pins
+   everything it downloads), then `make check`.
+2. `make dist VERSION=x.y`: `out/riscos-crossdev-toolchain-x.y-x86_64-linux.tar.xz`
+   and its `.sha256`.
+3. Put the file name, sha256 and release URL in `toolchain/PREBUILT`, add
+   the version to `CHANGELOG.md`, commit, and tag `vx.y`.
+4. In a fresh clone of the tag, `toolchain/install-prebuilt.sh out/...tar.xz`
+   and `make check` again: that's what users will get.
+5. Push the tag and create the GitHub release with the tarball and its
+   `.sha256` attached.
