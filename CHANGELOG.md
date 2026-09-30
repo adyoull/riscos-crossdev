@@ -1,5 +1,17 @@
 # Changes
 
+## 1.1
+
+- Toolchain: UnixLib 5.0.2 (was 5.0.1). Programs built with
+  `-D_FILE_OFFSET_BITS=64` can use files up to 4GB-1; nothing changes for
+  others (docs/RISCOS-RULES.md, rule 8). New toolchain tarball.
+- The riscos-mesa devkit 20.3.5-9 (EGL hardware overlays, a scaled render
+  size): `make devkit` installs it by checksum (`devkit/DEVKIT`), and
+  `make check-devkit` (also run by `make check`) checks its libraries are
+  VFPv3 and builds its six examples through every check.
+- `riscos.mk`: `RISCOS_DEVKIT`, `DEVKIT_CFLAGS`, `DEVKIT_LDFLAGS`.
+- The checks self-test covers the large-file calls.
+
 ## 1.0
 
 The first release.

@@ -35,5 +35,8 @@ programs and libraries built from them, under these licences:
 | UnixLib 5.0.2 (GCCSDK's UnixLib with riscos-unixlib's changes) | Mainly BSD-style, with some LGPL/GPL-with-exception parts: see `libunixlib/COPYING` in riscos-unixlib |
 | QEMU 8.2.2 (`qemu-arm-aligntrap`) | GPL version 2 |
 
+The riscos-mesa devkit (`make devkit`) isn't in this repo or the toolchain
+tarball either. Its `LICENCES.txt` lists the licences of its libraries.
+
 A program you build links UnixLib and GCC's runtime libraries statically.
 Check UnixLib's licences for what that asks of you when you distribute it.

@@ -5,14 +5,18 @@
 #   RISCOS_TOOLCHAIN  the installed cross toolchain (bin/arm-riscos-gnueabihf-gcc,
 #                     bin/elf2aif). Default: toolchain/env inside this repo,
 #                     where `make toolchain` and `make prebuilt` put it.
+#   RISCOS_DEVKIT     the riscos-mesa devkit (include/, lib/): OpenGL, EGL,
+#                     SDL2, OpenAL... Default: devkit/env inside this repo,
+#                     where `make devkit` puts it.
 #   FPU               vfpv3 (default) runs on every ARMv7 RISC OS machine with
 #                     VFP: Cortex-A8/A9 boards and the Pi 2 onwards. vfpv4 adds
 #                     fused multiply-add, which only Cortex-A7/A15/A53/A72 have.
 RCD_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 : "${RISCOS_TOOLCHAIN:=$RCD_DIR/toolchain/env}"
+: "${RISCOS_DEVKIT:=$RCD_DIR/devkit/env}"
 : "${FPU:=vfpv3}"
 : "${JOBS:=$(nproc)}"
-export RCD_DIR RISCOS_TOOLCHAIN FPU JOBS
+export RCD_DIR RISCOS_TOOLCHAIN RISCOS_DEVKIT FPU JOBS
 export RISCOS_HOST=arm-riscos-gnueabihf
 export PATH="$RISCOS_TOOLCHAIN/bin:$PATH"
 

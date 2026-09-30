@@ -30,6 +30,7 @@ Run on every build. `examples/hello/Makefile` runs them before it will zip.
 | `checks/check-unixlib.sh PROGRAM.elf` | | UnixLib's ticker block sizes disagree |
 | `checks/check-unaligned.sh [-s SAFE] [CFLAGS] FILE.c...` | sources | a cast raises the required alignment |
 | `checks/neon-align.py --check FILE.S...` | NEON assembly | a NEON access needs more alignment than it's sure to have |
+| `devkit/check.sh` (`make check-devkit`) | the installed riscos-mesa devkit | a library isn't VFPv3, or an example doesn't build or fails a check |
 
 `check-unaligned.sh` is noisy on big code bases. Check each warning by
 hand; put the ones that are safe (for example, a cast of a `malloc`ed

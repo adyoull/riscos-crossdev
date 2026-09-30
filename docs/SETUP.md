@@ -113,22 +113,39 @@ Two traps with configure scripts, from the ports:
 
 ## 4. Libraries: the riscos-mesa devkit
 
-For OpenGL (OSMesa), EGL, SDL2, GLU, OpenAL and zlib, use the devkit from a
-[riscos-mesa release](https://github.com/adyoull/riscos-mesa/releases)
-(`riscos-mesa-devkit-VERSION.tgz`; 20.3.5-8 is VFPv3, like this toolchain):
+For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
+use the riscos-mesa devkit. Each version of riscos-crossdev names the one
+it's tested with in `devkit/DEVKIT` (1.1: **20.3.5-9**, VFPv3 like the
+toolchain), with its sha256:
 
 ```sh
-mkdir -p devkit && tar xzf riscos-mesa-devkit-20.3.5-8.tgz -C devkit
+make devkit          # download, check and unpack it into devkit/env
+make check-devkit    # its libraries are VFPv3, and its six examples build
+                     # with this toolchain and pass every check
 ```
 
-Its `README.md` says how to compile and link against it. Check that each
-library you link has the FPU level you want:
-`checks/check-fpu.sh devkit/*/lib/*.a`.
+`make check` runs `check-devkit` too once a devkit is installed. If you
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-9.tgz`.
+Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
+moved to `$RISCOS_DEVKIT.old`.
+
+In a Makefile that includes `riscos.mk`:
+
+```make
+$(RO_CC) $(RISCOS_CFLAGS) $(DEVKIT_CFLAGS) -o prog prog.c \
+    $(RISCOS_LDFLAGS) $(DEVKIT_LDFLAGS) -lEGL -lOSMesa -lstdc++ -lz -lm
+```
+
+The devkit's `README.md` (in `devkit/env`) lists the libraries each part
+needs and in what order, explains every flag, and has six small example
+programs. Threaded programs (OpenAL, and anything using pthreads) should
+ship the PThreadTicker module from its `riscos/` folder.
 
 ## 5. Updating
 
-A new toolchain means a new tag of this repo. To move a port to it: check
-out the new tag, run `make prebuilt` into a fresh `RISCOS_TOOLCHAIN`,
+A new toolchain or devkit means a new tag of this repo. To move a port to
+it: check out the new tag, run `make prebuilt` into a fresh
+`RISCOS_TOOLCHAIN` and `make devkit`,
 rebuild everything from clean (object files built by the old compiler, or
 against the old UnixLib headers, must not be mixed in), and run the checks.
 

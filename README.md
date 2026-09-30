@@ -27,6 +27,7 @@ git clone -b v1.1 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
+make devkit        # optional: the riscos-mesa devkit (OpenGL, EGL, SDL2, OpenAL)
 make check         # the checks, a Fake RISC OS test and a QEMU test
 make hello         # examples/hello/out/Hello.zip, ready for the Pi
 ```
@@ -46,6 +47,7 @@ that Linux doesn't (read this one before porting anything).
 |---|---|
 | `env.sh`, `riscos.mk` | Settings and flags, for shell scripts and Makefiles |
 | `toolchain/` | Build the toolchain from source, or install the prebuilt one; `elf2aif` with the >32 MB fix |
+| `devkit/` | Install and check the riscos-mesa devkit (named, with its sha256, in `devkit/DEVKIT`) |
 | `checks/` | The checks, and a self-test that shows each one catching its fault |
 | `package/` | `rozip.py`: zips that keep RISC OS filetypes |
 | `fake/` | The Fake RISC OS: `kernel.h`, `swis.h` and a SWI dispatcher for Linux builds |
@@ -56,9 +58,9 @@ that Linux doesn't (read this one before porting anything).
 
 The large pieces are linked, not copied: UnixLib comes from
 [riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.2)
-and is fetched by checksum. For OpenGL, SDL2, OpenAL and GLU, use the
-devkit from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
-releases (see docs/SETUP.md).
+and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
+and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
+(release 20.3.5-9, `make devkit`; see docs/SETUP.md).
 
 ## Support
 

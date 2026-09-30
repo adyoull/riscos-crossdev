@@ -28,6 +28,9 @@ expect 0 "FPU: the toolchain's own libraries are VFPv3" "$HERE/check-fpu.sh" \
   "$RISCOS_TOOLCHAIN"/arm-riscos-gnueabihf/lib/libstdc++.a \
   "$RISCOS_TOOLCHAIN"/lib/gcc/arm-riscos-gnueabihf/10.2.0/libgcc.a
 expect 0 "UnixLib: a linked program is consistent" "$HERE/check-unixlib.sh" "$OUT/probed"
+$CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
+expect 0 "UnixLib 5.0.2: -D_FILE_OFFSET_BITS=64 programs use the 64-bit calls" \
+  sh -c "$RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T __unixlib_fstat64\$' && $RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T lseek64\$'"
 expect 1 "unaligned: the bad cast is reported" "$HERE/check-unaligned.sh" "$S/castalign.c"
 printf '%s\n' '# checked by hand' 'castalign\.c:.*uint32_t bad \(' > "$OUT/safe.txt"
 expect 0 "unaligned: a safe list hides it" "$HERE/check-unaligned.sh" -s "$OUT/safe.txt" "$S/castalign.c"

@@ -9,6 +9,9 @@ CLAUDE.md
 toolchain/dl/
 toolchain/work/
 toolchain/env/
+devkit/dl/
+devkit/env/
+devkit/env.old/
 qemu/work/
 out/
 __pycache__/

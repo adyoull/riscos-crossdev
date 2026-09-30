@@ -99,7 +99,24 @@ over 32 MB (the stock one wrote a broken branch). Give `!Run` a `WimpSlot`
 big enough for the program: UnixLib puts a large heap in a dynamic area,
 so the slot mostly has to hold the image itself.
 
-## 8. Filetypes and filenames
+## 8. Files over 2 GB need `-D_FILE_OFFSET_BITS=64`
+
+RISC OS files can be up to 4 GB - 1, but UnixLib's `off_t` is 32-bit.
+UnixLib 5.0.2 handles sizes and positions up to 4 GB - 1 (`struct stat`
+with a 64-bit `st_size`, `lseek`, `fseeko`/`ftello`, `truncate`, `mmap`)
+for code built with `-D_FILE_OFFSET_BITS=64`. Without it, `read` and
+`write` still work, but `lseek`, `stat` and friends report sizes and
+positions of 2 GB and over as negative numbers.
+
+- **Do:** add `-D_FILE_OFFSET_BITS=64` to programs that may open big files
+  (video, disc images, archives), use `fseeko`/`ftello` rather than
+  `fseek`/`ftell`, and build every library of theirs that passes `off_t`
+  or `struct stat` around the same way. It isn't in `RISCOS_CFLAGS`, so
+  nothing changes for code that doesn't ask for it.
+- **Catches it:** nothing automatic; test with a file over 2 GB on the Pi.
+  riscos-unixlib's `docs/LARGE-FILES.md` has the details.
+
+## 9. Filetypes and filenames
 
 RISC OS files have types, not extensions. In the repo, name files
 `name,xxx` (`!Run,feb`, `hello,ff8`) and zip them with `package/rozip.py`,
