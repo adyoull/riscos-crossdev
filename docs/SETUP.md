@@ -32,7 +32,7 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.0 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.1 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`.
 
 **Prebuilt** (a few minutes):
@@ -43,7 +43,7 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.0-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.1-x86_64-linux.tar.xz`.
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
 
@@ -75,7 +75,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.0
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.1
 make prebuilt       # installs there
 ```
 

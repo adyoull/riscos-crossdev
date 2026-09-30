@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.1 and elf2aif. Static linking only.
+# binutils 2.30, UnixLib 5.0.2 and elf2aif. Static linking only.
 #
 # Follows riscos-mesa's build/TOOLCHAIN.md (GCCSDK's autobuilder recipe
 # autobuilder/develop/gcc/setvars, without the GCC 4.7.4 bootstrap), as
@@ -27,17 +27,18 @@ case "$RISCOS_TOOLCHAIN|$TC|$DL" in *" "*)
   echo "build.sh: RISCOS_TOOLCHAIN, TC and DL must not contain spaces" >&2; exit 1;;
 esac
 "$HERE/fetch.sh" >/dev/null
-UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.1.diff
+UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.2.diff
 mkdir -p "$TC" "$RISCOS_TOOLCHAIN"; cd "$TC"
 log() { echo "=== $* ($(date +%H:%M))"; }
 
 unpack_gccsdk() {
   rm -rf gccsdk; tar xf "$DL"/gccsdk-64c6f81.tar.gz; mv riscos-gccsdk-64c6f81* gccsdk
-  # UnixLib 5.0.1: real wide-character functions, a high resolution
+  # UnixLib 5.0.2: real wide-character functions, a high resolution
   # monotonic clock, nanosleep accuracy, no mmap for large blocks, sched
-  # priorities, /dev/dsp and /dev/midi, and the pthread ticker fix (its
+  # priorities, /dev/dsp and /dev/midi, the pthread ticker fix (its
   # handler and Wimp filters run from the PThreadTicker module or an RMA
-  # copy, never from the program's own memory).
+  # copy, never from the program's own memory), and files up to 4GB-1
+  # with -D_FILE_OFFSET_BITS=64 (5.0.2).
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
 }
 [ -d gccsdk ] || unpack_gccsdk

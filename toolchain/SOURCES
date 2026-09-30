@@ -9,6 +9,6 @@ binutils_2.30.orig.tar.xz 6e46b8aeae2f727a36f0bd9505e405768a72218f1796f0d09757d4
 gmp_6.2.1+dfsg.orig.tar.xz c6ba08e3f079260ab90ff44ab8801eae134cd62cd78f4aa56317c0e70daa40cb https://archive.ubuntu.com/ubuntu/pool/main/g/gmp/gmp_6.2.1+dfsg.orig.tar.xz
 mpfr4_4.1.0.orig.tar.xz 0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f https://archive.ubuntu.com/ubuntu/pool/main/m/mpfr4/mpfr4_4.1.0.orig.tar.xz
 mpclib3_1.2.1.orig.tar.gz 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459 https://archive.ubuntu.com/ubuntu/pool/main/m/mpclib3/mpclib3_1.2.1.orig.tar.gz
-# UnixLib 5.0.1 (github.com/adyoull/riscos-unixlib, tag v5.0.1): the whole
+# UnixLib 5.0.2 (github.com/adyoull/riscos-unixlib, tag v5.0.2): the whole
 # change set against GCCSDK's UnixLib, applied to the gccsdk tree.
-unixlib-riscos-5.0.1.diff 11d0c3cd61b592db5301ba1d2acc7c5b53fc246f2b1f264936f1550ff762a5b9 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.1/unixlib-riscos.diff
+unixlib-riscos-5.0.2.diff cabf419e8d55dba55bbd4ee2df81a6c773321f79fb5ad10f38c0da31f04433cc https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.2/unixlib-riscos.diff

@@ -55,7 +55,7 @@ back into a filetype.
   (rule 3). `checks/check-fpu.sh` finds it.
 - The machine hangs, or other programs crash: rule 5 (code running while
   another task is paged in) or rule 4 (a stale UnixLib).
-- `*Set UnixLib$TickerStats <Wimp$ScrapDir>.TickerStats` makes UnixLib 5.0.1
+- `*Set UnixLib$TickerStats <Wimp$ScrapDir>.TickerStats` makes UnixLib (5.0.1 and later)
   write a line of thread switcher counters when a program quits.
 
 ## Testing examples/hello

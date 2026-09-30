@@ -73,7 +73,7 @@ the whole machine.
 Under the Wimp, only the current task's application memory is mapped. Code
 that runs from an interrupt, a ticker event, a callback or a filter while
 another task is paged in must not touch your program's memory (code or
-data). UnixLib 5.0.1 runs its thread switcher from the PThreadTicker module
+data). UnixLib (since 5.0.1) runs its thread switcher from the PThreadTicker module
 or a copy in the RMA for exactly this reason: before that, a threaded
 program could crash other tasks.
 

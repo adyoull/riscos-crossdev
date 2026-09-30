@@ -1,5 +1,5 @@
 #!/bin/bash
-# Check that a linked program has UnixLib 5.0.1's pthread ticker built
+# Check that a linked program has UnixLib 5.0.1's (or later) pthread ticker built
 # consistently: the start-up code (_syslib.s) must claim the whole 472-byte
 # pthread ticker block from the RMA (counters and the RMA copy of the
 # ticker routines, used when the PThreadTicker module isn't loaded), and
@@ -19,7 +19,7 @@ ELF=$1
 OBJDUMP=$RISCOS_HOST-objdump
 NM=$RISCOS_HOST-nm
 "$NM" "$ELF" | grep -q ' __pthread_ticker_init$' ||
-  { echo "WRONG: no __pthread_ticker_init: not linked with UnixLib 5.0.1" >&2; exit 1; }
+  { echo "WRONG: no __pthread_ticker_init: not linked with UnixLib 5.0.1 or later" >&2; exit 1; }
 # The claim: "mov r3, #<size>" then OS_Module (svc 0x2001e) in no_dynamic_area.
 size=$("$OBJDUMP" -d "$ELF" | awk '/^[0-9a-f]+ <no_dynamic_area>:$/{p=1;next} p&&/^$/{exit}
   p&&/mov\tr3, #/{s=$0} p&&/svc\t0x0002001e/{sub(/.*#/,"",s); sub(/[ \t;].*/,"",s); print s; exit}')
