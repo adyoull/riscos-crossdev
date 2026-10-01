@@ -1,6 +1,6 @@
 #!/bin/bash
 # Pack the built toolchain ($RISCOS_TOOLCHAIN) as a release tarball:
-#   toolchain/package.sh VERSION      e.g. toolchain/package.sh 1.1
+#   toolchain/package.sh VERSION      e.g. toolchain/package.sh 1.2
 # Output: out/riscos-crossdev-toolchain-VERSION-x86_64-linux.tar.xz and its
 # .sha256. Put the sha256 in toolchain/PREBUILT before tagging vVERSION.
 # Run it on a clean build (toolchain/build.sh all, then qemu/build.sh).
