@@ -1,7 +1,8 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.2 and elf2aif. Static linking only.
+# binutils 2.30, UnixLib 5.0.3.1, the PThreadTicker module and elf2aif.
+# Static linking only.
 #
 # Follows riscos-mesa's build/TOOLCHAIN.md (GCCSDK's autobuilder recipe
 # autobuilder/develop/gcc/setvars, without the GCC 4.7.4 bootstrap), as
@@ -27,18 +28,22 @@ case "$RISCOS_TOOLCHAIN|$TC|$DL" in *" "*)
   echo "build.sh: RISCOS_TOOLCHAIN, TC and DL must not contain spaces" >&2; exit 1;;
 esac
 "$HERE/fetch.sh" >/dev/null
-UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.2.diff
+UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.3.1.diff
 mkdir -p "$TC" "$RISCOS_TOOLCHAIN"; cd "$TC"
 log() { echo "=== $* ($(date +%H:%M))"; }
 
 unpack_gccsdk() {
   rm -rf gccsdk; tar xf "$DL"/gccsdk-64c6f81.tar.gz; mv riscos-gccsdk-64c6f81* gccsdk
-  # UnixLib 5.0.2: real wide-character functions, a high resolution
+  # UnixLib 5.0.3.1 (riscos-unixlib, an unofficial fork of GCCSDK's
+  # UnixLib): real wide-character functions, a high resolution
   # monotonic clock, nanosleep accuracy, no mmap for large blocks, sched
   # priorities, /dev/dsp and /dev/midi, the pthread ticker fix (its
   # handler and Wimp filters run from the PThreadTicker module or an RMA
   # copy, never from the program's own memory), and files up to 4GB-1
-  # with -D_FILE_OFFSET_BITS=64 (5.0.2).
+  # with -D_FILE_OFFSET_BITS=64 (5.0.2), SWI wrapper fixes (5.0.3), and
+  # in 5.0.3.1: a heap past 128MB in several dynamic areas, fork() in EABI
+  # programs, _exit(n), threads in Wimp programs that poll often
+  # (PThreadTicker 0.03, a 640-byte pthread RMA block).
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
 }
 [ -d gccsdk ] || unpack_gccsdk
@@ -83,6 +88,22 @@ fi
 # Keep build paths out of the libraries' debug information.
 TFLAGS="-g -O2 -fstack-clash-protection -fdebug-prefix-map=$TC=/riscos-crossdev"
 
+# The PThreadTicker module UnixLib builds (pthticker) goes in
+# $RISCOS_TOOLCHAIN/riscos, with the ReadMe and Licence from the release's
+# zip: threaded programs ship it and RMLoad it from !Run. UnixLib's own
+# install doesn't copy it. It must be byte for byte the release's module.
+install_pthticker() {
+  local m=$TC/gcc-10.2.0/cross-build/$T/libunixlib/pthticker z=$TC/pthticker-zip
+  [ -s "$m" ] || { echo "no $m: UnixLib's build didn't make the module" >&2; exit 1; }
+  rm -rf "$z"; mkdir -p "$z" "$RISCOS_TOOLCHAIN/riscos"
+  unzip -q "$DL/PThreadTicker-0.03.zip" -d "$z"
+  cmp -s "$m" "$z/PThreadTicker/!System/310/Modules/PThrTicker" || {
+    echo "the PThreadTicker built here differs from the v5.0.3.1 release's" >&2; exit 1; }
+  cp "$m" "$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa"
+  cp "$z/PThreadTicker/ReadMe" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-ReadMe,fff"
+  cp "$z/PThreadTicker/Licence" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-Licence,fff"
+}
+
 if [ "$WHAT" = unixlib ]; then
   log "UnixLib only (from clean)"
   S=$TC/gcc-10.2.0
@@ -93,6 +114,7 @@ if [ "$WHAT" = unixlib ]; then
   cd "$S"/cross-build; rm -rf $T/libunixlib
   make configure-target-libunixlib all-target-libunixlib > "$TC"/unixlib-make.log 2>&1
   make install-target-libunixlib > "$TC"/unixlib-install.log 2>&1
+  install_pthticker
   exit 0
 fi
 
@@ -141,6 +163,7 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
     --with-float=hard --with-fpu=vfpv3 --with-arch=armv7-a > "$TC"/gcc-configure.log
   make -j"$JOBS" > "$TC"/gcc-make.log 2>&1
   make install > "$TC"/gcc-install.log 2>&1
+  install_pthticker
   cd "$TC"
 fi
 
