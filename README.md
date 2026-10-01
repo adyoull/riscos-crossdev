@@ -10,7 +10,7 @@ layers, each catching what the one before it can't:
 
 | Layer | What it is | What it catches |
 |---|---|---|
-| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.2, built from source; `elf2aif` turns the static ELF into an Absolute (AIF) file | Doesn't compile or link |
+| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.3.1, built from source; `elf2aif` turns the static ELF into an Absolute (AIF) file | Doesn't compile or link |
 | 2. Checks | Run on every build: stack probes, unaligned casts, FPU level, UnixLib consistency | Code that builds, but aborts or hangs on RISC OS |
 | 3. Fake RISC OS | Your RISC OS-specific C, compiled for Linux against C fakes of the SWIs it calls | Wrong SWI use and logic errors, in a debugger, in seconds |
 | 4. QEMU user mode | Your portable code as real ARM code, on a QEMU patched to trap unaligned accesses like RISC OS, emulating a Cortex-A8 (VFPv3). Unicorn for module and assembler routines | Alignment aborts, VFPv4-only instructions, ARM code-generation bugs |
@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.1 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.2 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -46,7 +46,7 @@ that Linux doesn't (read this one before porting anything).
 | Path | What |
 |---|---|
 | `env.sh`, `riscos.mk` | Settings and flags, for shell scripts and Makefiles |
-| `toolchain/` | Build the toolchain from source, or install the prebuilt one; `elf2aif` with the >32 MB fix |
+| `toolchain/` | Build the toolchain from source, or install the prebuilt one; `elf2aif` with the >32 MB fix; the PThreadTicker module |
 | `devkit/` | Install and check the riscos-mesa devkit (named, with its sha256, in `devkit/DEVKIT`) |
 | `checks/` | The checks, and a self-test that shows each one catching its fault |
 | `package/` | `rozip.py`: zips that keep RISC OS filetypes |
@@ -57,10 +57,10 @@ that Linux doesn't (read this one before porting anything).
 | `docs/` | Setup, testing, RISC OS rules, testing on a Pi |
 
 The large pieces are linked, not copied: UnixLib comes from
-[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.2)
+[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.1; an unofficial fork of GCCSDK's UnixLib)
 and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
 and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
-(release 20.3.5-9, `make devkit`; see docs/SETUP.md).
+(release 20.3.5-10, `make devkit`; see docs/SETUP.md).
 
 ## Support
 

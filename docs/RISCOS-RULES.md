@@ -78,9 +78,11 @@ or a copy in the RMA for exactly this reason: before that, a threaded
 program could crash other tasks.
 
 - **Do:** keep interrupt-time code and its data in a module or the RMA.
-  Ship PThreadTicker with threaded programs (from the
-  [riscos-unixlib release](https://github.com/adyoull/riscos-unixlib/releases))
-  and load it from `!Run`.
+  Ship PThreadTicker with threaded programs and load it from `!Run`.
+  Use the toolchain's copy (`toolchain/env/riscos/PThrTicker,ffa`, version
+  0.03): UnixLib 5.0.3.1 only uses 0.03, and runs its own copy otherwise.
+  UnixLib 5.0.3.1 also keeps threads running in Wimp programs that poll
+  more often than every 2 cs, which earlier versions didn't.
 - **Catches it:** nothing on Linux. A Pi, with other tasks running (see
   PI-TESTING.md). The Unicorn runner (`emu/`) can check that such code
   preserves registers and only uses the memory it's given.
@@ -102,7 +104,7 @@ so the slot mostly has to hold the image itself.
 ## 8. Files over 2 GB need `-D_FILE_OFFSET_BITS=64`
 
 RISC OS files can be up to 4 GB - 1, but UnixLib's `off_t` is 32-bit.
-UnixLib 5.0.2 handles sizes and positions up to 4 GB - 1 (`struct stat`
+UnixLib (since 5.0.2) handles sizes and positions up to 4 GB - 1 (`struct stat`
 with a 64-bit `st_size`, `lseek`, `fseeko`/`ftello`, `truncate`, `mmap`)
 for code built with `-D_FILE_OFFSET_BITS=64`. Without it, `read` and
 `write` still work, but `lseek`, `stat` and friends report sizes and

@@ -1,9 +1,11 @@
 #!/bin/bash
-# Check that a linked program has UnixLib 5.0.1's (or later) pthread ticker built
-# consistently: the start-up code (_syslib.s) must claim the whole 472-byte
-# pthread ticker block from the RMA (counters and the RMA copy of the
-# ticker routines, used when the PThreadTicker module isn't loaded), and
-# agree with the C side's __pthread_callevery_block_size.
+# Check that a linked program has UnixLib's pthread ticker built
+# consistently: the start-up code (_syslib.s) must claim the whole pthread
+# RMA block (counters and the RMA copy of the ticker routines, used when
+# the PThreadTicker module isn't loaded), and agree with the size the C
+# side checks, __pthread_callevery_block_size. The block is 640 bytes in
+# UnixLib 5.0.3.1, the toolchain's (472 in 5.0.1 to 5.0.3): set
+# TICKER_BLOCK to check a program linked with another version.
 #
 #   checks/check-unixlib.sh PROGRAM.elf     (the unstripped ELF, before elf2aif)
 #
@@ -23,7 +25,7 @@ NM=$RISCOS_HOST-nm
 # The claim: "mov r3, #<size>" then OS_Module (svc 0x2001e) in no_dynamic_area.
 size=$("$OBJDUMP" -d "$ELF" | awk '/^[0-9a-f]+ <no_dynamic_area>:$/{p=1;next} p&&/^$/{exit}
   p&&/mov\tr3, #/{s=$0} p&&/svc\t0x0002001e/{sub(/.*#/,"",s); sub(/[ \t;].*/,"",s); print s; exit}')
-want=472
+want=${TICKER_BLOCK:-640}
 # __pthread_callevery_block_size, a little-endian word in .data
 addr=$("$NM" "$ELF" | awk '$3=="__pthread_callevery_block_size"{print $1}')
 csize=$("$OBJDUMP" -s -j .data --start-address=0x$addr --stop-address=$(printf '0x%x' $((0x$addr+4))) "$ELF" |

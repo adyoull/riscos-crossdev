@@ -1,5 +1,19 @@
 # Changes
 
+## 1.2
+
+- Toolchain: UnixLib 5.0.3.1 (was 5.0.2): a heap past 128 MB, `fork()` in
+  EABI programs, `_exit(n)`, threads that run in Wimp programs polling more
+  often than every 2 cs, and 5.0.3's SWI wrapper fixes. Everything must be
+  relinked: the pthread RMA block is now 640 bytes, and
+  `checks/check-unixlib.sh` now expects that (`TICKER_BLOCK=472` checks a
+  program linked with 5.0.1 to 5.0.3). New toolchain tarball.
+- The toolchain carries the PThreadTicker module (0.03) that UnixLib
+  5.0.3.1 uses, in `riscos/` with its ReadMe and Licence. The build checks
+  it is byte for byte the riscos-unixlib release's module.
+- The riscos-mesa devkit 20.3.5-10 (was 20.3.5-9). Its six examples are
+  relinked by `make check-devkit`.
+
 ## 1.1
 
 - Toolchain: UnixLib 5.0.2 (was 5.0.1). Programs built with

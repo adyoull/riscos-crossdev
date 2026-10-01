@@ -21,10 +21,13 @@ back into a filetype.
 - SharedUnixLibrary 1.16 or later and ARMEABISupport, from PackMan. Every
   UnixLib program needs both; `!Run` should `RMEnsure` them (see
   `examples/hello/app/!Run,feb`).
-- Threaded programs: the PThreadTicker module, from the
-  [riscos-unixlib release](https://github.com/adyoull/riscos-unixlib/releases)
-  (PThreadTicker-0.01.zip). Ship it in your app and `RMLoad` it from
-  `!Run` if it isn't loaded, as riscos-warzone2100 does.
+- Threaded programs: the PThreadTicker module. Programs built with this
+  toolchain (UnixLib 5.0.3.1) use version 0.03, which is in
+  `toolchain/env/riscos/PThrTicker,ffa` with its ReadMe and Licence (the
+  same module as PThreadTicker-0.03.zip on the riscos-unixlib v5.0.3.1
+  release). Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe
+  shows. Without it, or with an older version loaded, UnixLib runs its own
+  copy, which also works.
 - Programs built with the riscos-mesa devkit: whatever its README lists for
   the libraries you use.
 

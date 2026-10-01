@@ -28,6 +28,10 @@ expect 0 "FPU: the toolchain's own libraries are VFPv3" "$HERE/check-fpu.sh" \
   "$RISCOS_TOOLCHAIN"/arm-riscos-gnueabihf/lib/libstdc++.a \
   "$RISCOS_TOOLCHAIN"/lib/gcc/arm-riscos-gnueabihf/10.2.0/libgcc.a
 expect 0 "UnixLib: a linked program is consistent" "$HERE/check-unixlib.sh" "$OUT/probed"
+expect 1 "UnixLib: the same program fails against the old 472-byte block" \
+  env TICKER_BLOCK=472 "$HERE/check-unixlib.sh" "$OUT/probed"
+expect 0 "PThreadTicker 0.03 is in the toolchain" \
+  sh -c "strings -a '$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa' | grep -q 'PThreadTicker.0\.03'"
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
 expect 0 "UnixLib 5.0.2: -D_FILE_OFFSET_BITS=64 programs use the 64-bit calls" \
   sh -c "$RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T __unixlib_fstat64\$' && $RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T lseek64\$'"
