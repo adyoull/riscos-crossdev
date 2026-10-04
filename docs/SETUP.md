@@ -32,7 +32,7 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.2 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.3 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`.
 
 **Prebuilt** (a few minutes):
@@ -43,7 +43,7 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.2-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.3-x86_64-linux.tar.xz`.
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
 
@@ -63,7 +63,7 @@ Either way you get, in `toolchain/env/bin`:
 
 | Program | What |
 |---|---|
-| `arm-riscos-gnueabihf-gcc`, `-g++`, `-as`, `-ld`, `-objdump`, ... | The cross toolchain. `-static` only |
+| `arm-riscos-gnueabihf-gcc`, `-g++`, `-as`, `-ld`, `-objdump`, ... | The cross toolchain. Static only: there are no shared target libraries, and links are static without `-static` too |
 | `elf2aif` | ELF to Absolute (AIF). Has the fix for images over 32 MB |
 | `qemu-arm-aligntrap` | QEMU user mode that traps unaligned accesses (`qemu/`) |
 
@@ -75,7 +75,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.2
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.3
 make prebuilt       # installs there
 ```
 
@@ -100,6 +100,11 @@ From a shell script, or for autoconf/CMake builds:
 ./configure --host=arm-riscos-gnueabihf CFLAGS="$RISCOS_CFLAGS" LDFLAGS=-static
 ```
 
+Configure tests and libtool link the static libraries: the toolchain has
+no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
+`-static` to links that don't say `-shared`, `-r` or `-mmodule` (keeping
+`-static` in `LDFLAGS` does no harm).
+
 `examples/hello/Makefile` shows the whole path: compile, check, strip,
 `elf2aif`, zip. Copy it to start.
 
@@ -115,7 +120,7 @@ Two traps with configure scripts, from the ports:
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.2: **20.3.5-10**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.3: **20.3.5-11**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -125,7 +130,7 @@ make check-devkit    # its libraries are VFPv3, and its six examples build
 ```
 
 `make check` runs `check-devkit` too once a devkit is installed. If you
-already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-10.tgz`.
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-11.tgz`.
 Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
 moved to `$RISCOS_DEVKIT.old`.
 
@@ -139,11 +144,10 @@ $(RO_CC) $(RISCOS_CFLAGS) $(DEVKIT_CFLAGS) -o prog prog.c \
 The devkit's `README.md` (in `devkit/env`) lists the libraries each part
 needs and in what order, explains every flag, and has six small example
 programs. Threaded programs (OpenAL, SDL sound, and anything using
-pthreads) should ship the PThreadTicker module. Take it from the
-toolchain, `toolchain/env/riscos/PThrTicker,ffa` (0.03, for UnixLib
-5.0.3.1), not from the devkit's `riscos/` folder: the devkit 20.3.5-10 has
-0.01, which programs built with this toolchain don't use (they run their
-own copy instead, which works but isn't the module).
+pthreads) should ship the PThreadTicker module 0.03, which UnixLib 5.0.3.1
+and later use: `toolchain/env/riscos/PThrTicker,ffa`, or the same module in
+the devkit's `riscos/` folder (devkit 20.3.5-11; earlier devkits have 0.01,
+which programs built with this toolchain don't use).
 
 ## 5. Updating
 

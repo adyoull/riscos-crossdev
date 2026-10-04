@@ -1,5 +1,23 @@
 # Changes
 
+## 1.3
+
+- Toolchain: UnixLib 5.0.3.2 (was 5.0.3.1): `LLONG_MIN` is a `long long`,
+  `getservbyname_r`, `getservbyport_r` and `getservent_r` exist, and
+  eventfd works with threads. No ABI change (PThreadTicker 0.03, a 640-byte
+  pthread RMA block); relink to get the fixes. New toolchain tarball.
+- **Static only.** The toolchain has no shared target libraries
+  (`libunixlib.so`, `libstdc++.so`, `libm.so`, `libgcc_s.so` are gone), and
+  the compiler links statically even without `-static` (not with `-shared`,
+  `-r` or `-mmodule`). Up to 1.2 a link without `-static` silently used
+  `libunixlib.so`, so a newer `libunixlib.a` changed nothing for it, and
+  libtool followed `libm.la` to `libm.so` even with `-static` (found by
+  riscos-gtk).
+- `checks/check-static.sh`, now part of `check-all.sh`: fails on a
+  dynamically linked program. The checks self-test covers it.
+- The riscos-mesa devkit 20.3.5-11 (UnixLib 5.0.3.1 programs, PThreadTicker
+  0.03 in its `riscos/` folder).
+
 ## 1.2
 
 - Toolchain: UnixLib 5.0.3.1 (was 5.0.2): a heap past 128 MB, `fork()` in
