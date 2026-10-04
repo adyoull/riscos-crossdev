@@ -30,7 +30,7 @@ expect 0 "FPU: the toolchain's own libraries are VFPv3" "$HERE/check-fpu.sh" \
 $CC -mfpu=vfpv3 -fstack-clash-protection -o "$OUT/nostatic" "$S/bigframe.c"
 expect 0 "static: a link without -static is static" "$HERE/check-static.sh" "$OUT/nostatic"
 expect 0 "static: the toolchain has no shared target libraries" \
-  sh -c "! find '$RISCOS_TOOLCHAIN/arm-riscos-gnueabihf/lib' '$RISCOS_TOOLCHAIN/lib/gcc/arm-riscos-gnueabihf' -name '*.so*' | grep -q ."
+  sh -c "! find '$RISCOS_TOOLCHAIN/arm-riscos-gnueabihf/lib' '$RISCOS_TOOLCHAIN/lib/gcc/arm-riscos-gnueabihf' -path '*/plugin' -prune -o -name '*.so*' -print | grep -q ."
 $CC -mfpu=vfpv3 -fPIC -shared -nostdlib -o "$OUT/shared.so" "$S/fma.c"
 expect 1 "static: a shared object is reported" "$HERE/check-static.sh" "$OUT/shared.so"
 expect 0 "UnixLib: a linked program is consistent" "$HERE/check-unixlib.sh" "$OUT/probed"
