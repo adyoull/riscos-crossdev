@@ -1,8 +1,9 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.3.1, the PThreadTicker module and elf2aif.
-# Static linking only.
+# binutils 2.30, UnixLib 5.0.3.2, the PThreadTicker module and elf2aif.
+# Static linking only: there are no shared target libraries, and links are
+# static by default.
 #
 # Follows riscos-mesa's build/TOOLCHAIN.md (GCCSDK's autobuilder recipe
 # autobuilder/develop/gcc/setvars, without the GCC 4.7.4 bootstrap), as
@@ -28,13 +29,13 @@ case "$RISCOS_TOOLCHAIN|$TC|$DL" in *" "*)
   echo "build.sh: RISCOS_TOOLCHAIN, TC and DL must not contain spaces" >&2; exit 1;;
 esac
 "$HERE/fetch.sh" >/dev/null
-UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.3.1.diff
+UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.3.2.diff
 mkdir -p "$TC" "$RISCOS_TOOLCHAIN"; cd "$TC"
 log() { echo "=== $* ($(date +%H:%M))"; }
 
 unpack_gccsdk() {
   rm -rf gccsdk; tar xf "$DL"/gccsdk-64c6f81.tar.gz; mv riscos-gccsdk-64c6f81* gccsdk
-  # UnixLib 5.0.3.1 (riscos-unixlib, an unofficial fork of GCCSDK's
+  # UnixLib 5.0.3.2 (riscos-unixlib, an unofficial fork of GCCSDK's
   # UnixLib): real wide-character functions, a high resolution
   # monotonic clock, nanosleep accuracy, no mmap for large blocks, sched
   # priorities, /dev/dsp and /dev/midi, the pthread ticker fix (its
@@ -43,8 +44,21 @@ unpack_gccsdk() {
   # with -D_FILE_OFFSET_BITS=64 (5.0.2), SWI wrapper fixes (5.0.3), and
   # in 5.0.3.1: a heap past 128MB in several dynamic areas, fork() in EABI
   # programs, _exit(n), threads in Wimp programs that poll often
-  # (PThreadTicker 0.03, a 640-byte pthread RMA block).
+  # (PThreadTicker 0.03, a 640-byte pthread RMA block); in 5.0.3.2: LLONG_MIN
+  # is a long long, getservby*_r, eventfd with threads.
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
+  # Static only (riscos-crossdev 1.3). RISC OS programs are linked
+  # statically; GCCSDK's shared libraries need !SharedLibs' ELF loader. A
+  # link without -static used to pick libunixlib.so, libstdc++.so and libm.so
+  # silently, and libtool followed libm.la to libm.so even with -static (found
+  # by riscos-gtk). So the target libraries are built static only
+  # (--disable-shared below), and the driver adds -static to every link that
+  # doesn't ask for -shared, -r or -mmodule (ld 2.30 crashes on a non-static
+  # link when there are no shared libraries to use).
+  sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{!shared:%{!static:%{!r:%{!mmodule:-static}}}}" \\|' \
+    gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
+  grep -q '%{!mmodule:-static}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    { echo "couldn't add the default -static to GCCSDK's driver specs" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk
 H=$TC/gccsdk/autobuilder/develop/gcc
@@ -98,7 +112,7 @@ install_pthticker() {
   rm -rf "$z"; mkdir -p "$z" "$RISCOS_TOOLCHAIN/riscos"
   unzip -q "$DL/PThreadTicker-0.03.zip" -d "$z"
   cmp -s "$m" "$z/PThreadTicker/!System/310/Modules/PThrTicker" || {
-    echo "the PThreadTicker built here differs from the v5.0.3.1 release's" >&2; exit 1; }
+    echo "the PThreadTicker built here differs from the v5.0.3.2 release's" >&2; exit 1; }
   cp "$m" "$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa"
   cp "$z/PThreadTicker/ReadMe" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-ReadMe,fff"
   cp "$z/PThreadTicker/Licence" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-Licence,fff"
@@ -144,7 +158,6 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
     printf '.global _start\n_start:\n bx lr\n' | "$RISCOS_TOOLCHAIN"/bin/$T-as -o crt0.o
     : | "$RISCOS_TOOLCHAIN"/bin/$T-as -o empty.o
     for a in libunixlib.a libc.a libpthread.a; do [ -f $a ] || "$RISCOS_TOOLCHAIN"/bin/$T-ar rc $a empty.o; done
-    [ -f libunixlib.so ] || "$RISCOS_TOOLCHAIN"/bin/$T-ld -m armelf_riscos_eabi -shared -o libunixlib.so empty.o
     rm empty.o )
 
   ( cd "$S" && autogen Makefile.def && autoconf2.69 && AUTOCONF=autoconf2.69 "$H"/reconf-libunixlib \
@@ -153,7 +166,7 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
   CC=gcc CXX=g++ CFLAGS=-O1 CXXFLAGS=-O1 \
   CFLAGS_FOR_TARGET="$TFLAGS" CXXFLAGS_FOR_TARGET="$TFLAGS" \
   ../configure --prefix="$RISCOS_TOOLCHAIN" --target=$T \
-    --enable-shared=libunixlib,libgcc,libstdc++ --enable-languages=c,c++ \
+    --disable-shared --enable-languages=c,c++ \
     --enable-threads=posix --enable-sjlj-exceptions=no --enable-__cxa_atexit \
     --enable-c99 --enable-cmath --disable-libstdcxx-pch --disable-libquadmath \
     --disable-nls --disable-tls --disable-libssp --disable-libgomp --disable-libitm \
