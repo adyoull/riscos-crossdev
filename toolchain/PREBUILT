@@ -1,3 +1,3 @@
 # The prebuilt toolchain for this version of riscos-crossdev: file, sha256,
 # URL (a GitHub release asset). toolchain/install-prebuilt.sh checks it.
-riscos-crossdev-toolchain-1.3-x86_64-linux.tar.xz bcdb35fbda9315f845bf207675c8a6e62b383005a4b0e35eea1007a717da9914 https://github.com/adyoull/riscos-crossdev/releases/download/v1.3/riscos-crossdev-toolchain-1.3-x86_64-linux.tar.xz
+riscos-crossdev-toolchain-1.4-x86_64-linux.tar.xz 17e8337764bc99f65d6e7d5f938dcb4c55061e151c48312536500040b649aba7 https://github.com/adyoull/riscos-crossdev/releases/download/v1.4/riscos-crossdev-toolchain-1.4-x86_64-linux.tar.xz
