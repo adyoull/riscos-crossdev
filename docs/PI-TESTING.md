@@ -24,8 +24,8 @@ back into a filetype.
 - Threaded programs: the PThreadTicker module. Programs built with this
   toolchain (UnixLib 5.0.3.1 and later) use version 0.03, which is in
   `toolchain/env/riscos/PThrTicker,ffa` with its ReadMe and Licence (the
-  same module as PThreadTicker-0.03.zip on the riscos-unixlib v5.0.3.2
-  release, and as the one in the riscos-mesa devkit 20.3.5-11). Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe
+  same module as PThreadTicker-0.03.zip on the riscos-unixlib v5.0.3.3
+  release, and as the one in the riscos-mesa devkit 20.3.5-11 and later). Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe
   shows. Without it, or with an older version loaded, UnixLib runs its own
   copy, which also works.
 - Programs built with the riscos-mesa devkit: whatever its README lists for

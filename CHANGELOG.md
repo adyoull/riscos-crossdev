@@ -1,5 +1,23 @@
 # Changes
 
+## 1.4
+
+- Toolchain: UnixLib 5.0.3.3 (was 5.0.3.2), with riscos-unixlib's
+  2026-10-04 audit fixes:
+  - a wait for another thread inside `read()`/`write()` or stdio no longer
+    stops a threaded program (a blocking `/dev/dsp` write through `fwrite`
+    did);
+  - `fork()` in a threaded EABI program;
+  - the services database (`getservent`, `getservbyname_r`...);
+  - `swprintf`/`wcsftime` with `%ls`/`%lc`;
+  - exit codes 128-255;
+  - a small gap after the heap no longer caps later heap areas.
+
+  No ABI change (PThreadTicker 0.03, a 640-byte pthread RMA block): relink
+  to get the fixes. New toolchain tarball.
+- The riscos-mesa devkit 20.3.5-12. It's on GitHub, so `make devkit`
+  downloads it.
+
 ## 1.3
 
 - Toolchain: UnixLib 5.0.3.2 (was 5.0.3.1): `LLONG_MIN` is a `long long`,

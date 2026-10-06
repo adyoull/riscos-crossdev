@@ -32,7 +32,7 @@ programs and libraries built from them, under these licences:
 | binutils 2.30 | GPL version 3 or later |
 | GMP, MPFR, MPC (used only to build GCC) | LGPL version 3 or later |
 | GCCSDK (riscos-gccsdk at 64c6f81): the RISC OS changes to GCC and binutils | As the files they change |
-| UnixLib 5.0.3.2 (GCCSDK's UnixLib with riscos-unixlib's changes) | Mainly BSD-style, with some LGPL/GPL-with-exception parts: see `libunixlib/COPYING` in riscos-unixlib |
+| UnixLib 5.0.3.3 (GCCSDK's UnixLib with riscos-unixlib's changes) | Mainly BSD-style, with some LGPL/GPL-with-exception parts: see `libunixlib/COPYING` in riscos-unixlib |
 | PThreadTicker 0.03 (`riscos/PThrTicker`, built with UnixLib) | Revised BSD licence, as UnixLib (`riscos/PThreadTicker-Licence`) |
 | QEMU 8.2.2 (`qemu-arm-aligntrap`) | GPL version 2 |
 

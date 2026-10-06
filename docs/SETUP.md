@@ -32,7 +32,7 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.3 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.4 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`.
 
 **Prebuilt** (a few minutes):
@@ -43,7 +43,7 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.3-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.4-x86_64-linux.tar.xz`.
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
 
@@ -75,7 +75,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.3
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.4
 make prebuilt       # installs there
 ```
 
@@ -120,7 +120,7 @@ Two traps with configure scripts, from the ports:
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.3: **20.3.5-11**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.4: **20.3.5-12**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -130,7 +130,7 @@ make check-devkit    # its libraries are VFPv3, and its six examples build
 ```
 
 `make check` runs `check-devkit` too once a devkit is installed. If you
-already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-11.tgz`.
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-12.tgz`.
 Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
 moved to `$RISCOS_DEVKIT.old`.
 
@@ -146,7 +146,7 @@ needs and in what order, explains every flag, and has six small example
 programs. Threaded programs (OpenAL, SDL sound, and anything using
 pthreads) should ship the PThreadTicker module 0.03, which UnixLib 5.0.3.1
 and later use: `toolchain/env/riscos/PThrTicker,ffa`, or the same module in
-the devkit's `riscos/` folder (devkit 20.3.5-11; earlier devkits have 0.01,
+the devkit's `riscos/` folder (devkit 20.3.5-11 and later; earlier devkits have 0.01,
 which programs built with this toolchain don't use).
 
 ## 5. Updating
