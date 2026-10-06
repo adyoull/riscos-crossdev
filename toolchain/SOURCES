@@ -9,9 +9,9 @@ binutils_2.30.orig.tar.xz 6e46b8aeae2f727a36f0bd9505e405768a72218f1796f0d09757d4
 gmp_6.2.1+dfsg.orig.tar.xz c6ba08e3f079260ab90ff44ab8801eae134cd62cd78f4aa56317c0e70daa40cb https://archive.ubuntu.com/ubuntu/pool/main/g/gmp/gmp_6.2.1+dfsg.orig.tar.xz
 mpfr4_4.1.0.orig.tar.xz 0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f https://archive.ubuntu.com/ubuntu/pool/main/m/mpfr4/mpfr4_4.1.0.orig.tar.xz
 mpclib3_1.2.1.orig.tar.gz 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459 https://archive.ubuntu.com/ubuntu/pool/main/m/mpclib3/mpclib3_1.2.1.orig.tar.gz
-# UnixLib 5.0.3.2 (github.com/adyoull/riscos-unixlib, tag v5.0.3.2): the whole
+# UnixLib 5.0.3.3 (github.com/adyoull/riscos-unixlib, tag v5.0.3.3): the whole
 # change set against GCCSDK's UnixLib, applied to the gccsdk tree.
 # The same release's PThreadTicker zip: its ReadMe and Licence go with the
 # module the build makes, and the build checks its module is the same.
-PThreadTicker-0.03.zip f26dba5d5dcba5397fe4d11a7f7f23d5c2590140c0106e8bb975177d4d718e80 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.2/PThreadTicker-0.03.zip
-unixlib-riscos-5.0.3.2.diff d8913bc24dc6f1f4545d239185196327ad298f5c83b9b5ccb19277c2d46dc523 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.2/unixlib-riscos.diff
+PThreadTicker-0.03.zip c0014a73b1021cf2e57ac1cf0b66c8d0ec75fa23e69ee4cca457e10ff7f31939 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.3/PThreadTicker-0.03.zip
+unixlib-riscos-5.0.3.3.diff 8c70bb8c20a9e8ace0534f043b486f8ceb32857a35df71c7e3d34f043db95701 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.3/unixlib-riscos.diff
