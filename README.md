@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.4 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.5 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -60,7 +60,7 @@ The large pieces are linked, not copied: UnixLib comes from
 [riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.3; an unofficial fork of GCCSDK's UnixLib)
 and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
 and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
-(release 20.3.5-12, `make devkit`; see docs/SETUP.md).
+(release 20.3.5-15, `make devkit`; see docs/SETUP.md).
 
 ## Support
 

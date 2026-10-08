@@ -1,5 +1,12 @@
 # Changes
 
+## 1.5
+
+- The riscos-mesa devkit 20.3.5-15 (was 20.3.5-12). `make check-devkit`
+  builds its six examples with the toolchain and runs every check on them.
+- The toolchain is unchanged: UnixLib 5.0.3.3 is still riscos-unixlib's
+  latest release, so `toolchain/PREBUILT` still names 1.4's tarball.
+
 ## 1.4
 
 - Toolchain: UnixLib 5.0.3.3 (was 5.0.3.2), with riscos-unixlib's

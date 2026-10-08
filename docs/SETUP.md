@@ -32,8 +32,10 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.4 ...`). Each tag names
-one toolchain tarball and its sha256 in `toolchain/PREBUILT`.
+Use a tagged release of this repo (`git clone -b v1.5 ...`). Each tag names
+one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
+release changes only the devkit, it keeps the previous toolchain: 1.5 uses
+1.4's tarball.
 
 **Prebuilt** (a few minutes):
 
@@ -120,7 +122,7 @@ Two traps with configure scripts, from the ports:
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.4: **20.3.5-12**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.5: **20.3.5-15**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -130,7 +132,7 @@ make check-devkit    # its libraries are VFPv3, and its six examples build
 ```
 
 `make check` runs `check-devkit` too once a devkit is installed. If you
-already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-12.tgz`.
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-15.tgz`.
 Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
 moved to `$RISCOS_DEVKIT.old`.
 
