@@ -113,19 +113,35 @@ static const _kernel_oserror *call (int swi, int r[10])
   return e;
 }
 
-const _kernel_oserror *_swix (int swi, unsigned mask, ...)
+/* The masks are UnixLib's (swis.h): inputs _IN(0..9) in bits 0-9, outputs
+   _OUT(0..9) in bits 31-22 in register order, then _OUT(_FLAGS) (bit 21),
+   whose pointer gets the PSR flags (always 0 here: no N, Z, C or V).
+   _swi returns the register _RETURN(n) names, or the flags for
+   _RETURN(_FLAGS). _BLOCK isn't faked: a test using it stops. */
+static void unpack (unsigned mask, va_list ap, int r[10], int *outp[10], int **flagsp)
+{
+  int i;
+  if (mask & _BLOCK (0))
+    {
+      fprintf (stderr, "fake RISC OS: _BLOCK in a SWI mask isn't faked\n");
+      abort ();
+    }
+  for (i = 0; i < 10; i++) if (mask & _IN (i)) r[i] = va_arg (ap, int);
+  for (i = 0; i < 10; i++) if (mask & _OUT (i)) outp[i] = va_arg (ap, int *);
+  if (mask & _OUT (_FLAGS)) *flagsp = va_arg (ap, int *);
+}
+
+_kernel_oserror *_swix (int swi, unsigned mask, ...)
 {
   int r[10] = {0}, *outp[10] = {0}, *flagsp = NULL, i;
   const _kernel_oserror *e;
   va_list ap;
   va_start (ap, mask);
-  for (i = 0; i < 10; i++) if (mask & _IN (i)) r[i] = va_arg (ap, int);
-  for (i = 0; i < 10; i++) if (mask & _OUT (i)) outp[i] = va_arg (ap, int *);
-  if (mask & _FLAGS) flagsp = va_arg (ap, int *);
+  unpack (mask, ap, r, outp, &flagsp);
   va_end (ap);
   e = call (swi | XOS_Bit, r);
   if (e)
-    return e;                  /* outputs are not written on an error */
+    return (_kernel_oserror *) e;  /* outputs are not written on an error */
   for (i = 0; i < 10; i++) if (outp[i]) *outp[i] = r[i];
   if (flagsp) *flagsp = 0;
   return NULL;
@@ -134,12 +150,11 @@ const _kernel_oserror *_swix (int swi, unsigned mask, ...)
 int _swi (int swi, unsigned mask, ...)
 {
   int r[10] = {0}, *outp[10] = {0}, *flagsp = NULL, i;
+  unsigned ret = (mask >> 16) & 0xf;
   const _kernel_oserror *e;
   va_list ap;
   va_start (ap, mask);
-  for (i = 0; i < 10; i++) if (mask & _IN (i)) r[i] = va_arg (ap, int);
-  for (i = 0; i < 10; i++) if (mask & _OUT (i)) outp[i] = va_arg (ap, int *);
-  if (mask & _FLAGS) flagsp = va_arg (ap, int *);
+  unpack (mask, ap, r, outp, &flagsp);
   va_end (ap);
   e = call (swi & ~XOS_Bit, r);
   if (e)
@@ -150,7 +165,7 @@ int _swi (int swi, unsigned mask, ...)
     }
   for (i = 0; i < 10; i++) if (outp[i]) *outp[i] = r[i];
   if (flagsp) *flagsp = 0;
-  return r[(mask >> 16) & 0xf];
+  return ret == 0xf ? 0 : r[ret];
 }
 
 _kernel_oserror *_kernel_swi (int no, _kernel_swi_regs *in, _kernel_swi_regs *outr)

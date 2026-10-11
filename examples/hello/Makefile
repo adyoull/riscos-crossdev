@@ -16,7 +16,8 @@ all: $(OUT)/Hello.zip
 check: checks test-fake test-qemu
 
 # --- RISC OS build ---------------------------------------------------------
-$(OUT)/hello: $(SRC) src/greet.h src/ro.h | riscos-toolchain-present
+# The compiler and UnixLib are prerequisites too, so a new toolchain relinks.
+$(OUT)/hello: $(SRC) src/greet.h src/ro.h $(RO_CC) $(RISCOS_TOOLCHAIN)/$(RISCOS_HOST)/lib/libunixlib.a | riscos-toolchain-present
 	@mkdir -p $(OUT)
 	$(RO_CC) $(RISCOS_CFLAGS) -Wall -Wextra $(RISCOS_LDFLAGS) -o $@ $(SRC)
 
