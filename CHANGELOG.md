@@ -1,5 +1,14 @@
 # Changes
 
+## 1.7.2
+
+- **`AGENTS.md`:** a page for AI coding assistants working in this repo or
+  porting a program with it: setup, the rules that matter (keep
+  `RISCOS_CFLAGS`, run the checks on every link, what the QEMU exit
+  statuses mean), what never to edit (`fake/ports/`, generated files), and
+  how a release is made.
+- Nothing else changes: the toolchain is 1.4's, the devkit 20.3.5-15.
+
 ## 1.7.1
 
 - **The weekly fakes update works.** Its first run stopped installing

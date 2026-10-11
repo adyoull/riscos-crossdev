@@ -78,8 +78,8 @@ project gets the same compiler and libraries. Three ways, best first:
 
   ```sh
   git submodule add https://github.com/adyoull/riscos-crossdev crossdev
-  git -C crossdev checkout v1.7.1
-  git add crossdev && git commit -m "riscos-crossdev 1.7.1"
+  git -C crossdev checkout v1.7.2
+  git add crossdev && git commit -m "riscos-crossdev 1.7.2"
   ```
 
   The tag is recorded in your repository, and `RCD_DIR := crossdev` is
