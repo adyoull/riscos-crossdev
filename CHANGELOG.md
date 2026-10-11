@@ -1,5 +1,16 @@
 # Changes
 
+## 1.7.1
+
+- **The weekly fakes update works.** Its first run stopped installing
+  packages: on Ubuntu 24.04 `gcc-multilib` and `gcc-arm-linux-gnueabihf`
+  can't be installed together (apt exit 100). It now installs
+  `gcc-13-multilib`, which gives `-m32` without the conflict, and uses the
+  Node 24 versions of its actions (checkout v6, cache v5,
+  create-pull-request v8).
+- **SETUP.md** had the same package list: it now says `gcc-13-multilib`.
+- Nothing else changes: the toolchain is 1.4's, the devkit 20.3.5-15.
+
 ## 1.7
 
 - **Documentation for using the kit:** `docs/USING.md`, the guide from an
