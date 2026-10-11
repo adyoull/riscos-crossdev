@@ -1,10 +1,11 @@
-# examples/cmake: a CMake project built three ways from the same file.
+# examples/cmake: a CMake project built three ways from the same file
+# (RCD_DIR: riscos-crossdev, ../.. here).
 #
 #   For RISC OS (static ELF, checked, then AIF, with the devkit's zlib):
-#     cmake -B build-riscos -DCMAKE_TOOLCHAIN_FILE=../../cmake/riscos.cmake -DCMAKE_BUILD_TYPE=Release
+#     cmake -B build-riscos -DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/riscos.cmake -DCMAKE_BUILD_TYPE=Release
 #     cmake --build build-riscos          -> build-riscos/!Tally/tally,ff8
 #   As ARM Linux code, tests run under qemu-arm-aligntrap:
-#     cmake -B build-qemu -DCMAKE_TOOLCHAIN_FILE=../../cmake/linux-arm-aligntrap.cmake
+#     cmake -B build-qemu -DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/linux-arm-aligntrap.cmake
 #     cmake --build build-qemu && ctest --test-dir build-qemu
 #   On the host, to debug:
 #     cmake -B build-host && cmake --build build-host && ctest --test-dir build-host

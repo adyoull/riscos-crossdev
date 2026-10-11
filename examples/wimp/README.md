@@ -23,7 +23,8 @@ make RCD_DIR=../..          # out/Clicks.zip
 make RCD_DIR=../.. check    # the checks and the Fake RISC OS test
 ```
 
-To start your own desktop program from it, rename `!Clicks`, `APP_NAME`,
-the sprite names and `Clicks$Dir`. The window and icon block layouts are
+To start your own desktop program from it, rename `!Clicks` and
+`Clicks.zip` in the `Makefile`, `APP_NAME` in `src/app.c`, the sprite
+names and `Clicks$Dir`. The window and icon block layouts are
 the PRMs' (Wimp_CreateWindow, Wimp_CreateIcon, Wimp_CreateMenu). More in
 [docs/USING.md](../../docs/USING.md).

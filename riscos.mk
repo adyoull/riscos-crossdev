@@ -53,7 +53,10 @@ LINUXARM_CFLAGS ?= -O2 -g -mcpu=cortex-a8 -mfpu=vfpv3 -mfloat-abi=hard \
 
 include $(RCD_DIR)/fake/fake.mk
 
-# Check that the toolchain is there before using it.
+# Check that the toolchain is there before using it. (Not the default goal:
+# the first target in the Makefile that includes this one still is.)
+_rcd_default_goal := $(.DEFAULT_GOAL)
 riscos-toolchain-present:
 	@test -x $(RO_CC) || { echo "No toolchain in $(RISCOS_TOOLCHAIN): run 'make prebuilt' or 'make toolchain' in $(RCD_DIR)" >&2; exit 1; }
 .PHONY: riscos-toolchain-present
+.DEFAULT_GOAL := $(_rcd_default_goal)

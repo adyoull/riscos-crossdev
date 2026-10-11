@@ -14,7 +14,7 @@ them in the environment (or on the `make` command line) to override.
 | `RISCOS_DEVKIT` | `devkit/env` | The riscos-mesa devkit: `include/`, `lib/`, `lib/pkgconfig/` |
 | `FPU` | `vfpv3` | `vfpv3` runs on every ARMv7 RISC OS machine; `vfpv4` on Cortex-A7 and later only |
 | `JOBS` | `nproc` | Parallel jobs when building the toolchain |
-| `RCD_DIR` | where `riscos.mk` is | riscos-crossdev itself (Makefiles) |
+| `RCD_DIR` | where `riscos.mk` or `env.sh` is | riscos-crossdev itself. `env.sh` works it out in bash and zsh; in other shells set it before sourcing |
 
 ## make targets (in riscos-crossdev)
 
@@ -48,7 +48,7 @@ them in the environment (or on the `make` command line) to override.
 | `PNG2SPRITE` | `package/png2sprite.py` |
 | `ALIGNTRAP` | `qemu/aligntrap.sh` (run with `QEMU=$(QEMU_ALIGNTRAP)`) |
 | `LINUXARM_CC`, `LINUXARM_CFLAGS` | `arm-linux-gnueabihf-gcc` and the flags that make its code behave as RISC OS code does under QEMU (`-mno-unaligned-access`, Cortex-A8, `-no-pie`) |
-| `FAKE_CC`, `FAKE_CFLAGS`, `FAKE_SRC` | The Fake RISC OS: `gcc -m32 ... -I fake`, and `fake/riscos.c` to link in (from `fake/fake.mk`) |
+| `FAKE_CC`, `FAKE_CFLAGS`, `FAKE_SRC` | The Fake RISC OS: `gcc`; `-m32 -funsigned-char -I fake ...`; and `fake/riscos.c` to link in (from `fake/fake.mk`) |
 | target `riscos-toolchain-present` | Fails with a clear message if the toolchain isn't installed |
 
 `env.sh` sets the same for shell scripts: `PATH`, `RISCOS_HOST`,
@@ -59,7 +59,7 @@ them in the environment (or on the `make` command line) to override.
 
 | File | Use |
 |---|---|
-| `cmake/riscos.cmake` | `-DCMAKE_TOOLCHAIN_FILE=` for RISC OS builds. Sets `RISCOS` and `UNIX`; static only; searches the toolchain and devkit; `pkg_check_modules` reads the devkit's `.pc` files |
+| `cmake/riscos.cmake` | `-DCMAKE_TOOLCHAIN_FILE=` for RISC OS builds. Sets `RISCOS` and `UNIX`; static only; Release unless another build type is given; searches the toolchain and devkit; `pkg_check_modules` reads the devkit's `.pc` files |
 | `cmake/RiscOS.cmake` | `include(RiscOS)`: `riscos_checks(target)` runs `check-all.sh` after each link; `riscos_aif(target path,ff8)` adds `target-aif`, the stripped Absolute file |
 | `cmake/linux-arm-aligntrap.cmake` | Toolchain file for ARM Linux builds whose tests ctest runs under `qemu-arm-aligntrap` |
 | `cmake/Platform/RISCOS.cmake` | CMake's description of the platform (used by `riscos.cmake`) |

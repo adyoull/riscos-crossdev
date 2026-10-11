@@ -15,12 +15,12 @@ make RCD_DIR=../..          # build-riscos/Tally.zip
 make RCD_DIR=../.. check    # that, and ctest under QEMU and on the host
 ```
 
-Or by hand:
+Or by hand, with `RCD_DIR` set to riscos-crossdev (`../..` here):
 
 ```sh
-cmake -B build-riscos -DCMAKE_TOOLCHAIN_FILE=../../cmake/riscos.cmake -DCMAKE_BUILD_TYPE=Release
+cmake -B build-riscos -DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/riscos.cmake -DCMAKE_BUILD_TYPE=Release
 cmake --build build-riscos
-cmake -B build-qemu -DCMAKE_TOOLCHAIN_FILE=../../cmake/linux-arm-aligntrap.cmake
+cmake -B build-qemu -DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/linux-arm-aligntrap.cmake
 cmake --build build-qemu && ctest --test-dir build-qemu
 ```
 

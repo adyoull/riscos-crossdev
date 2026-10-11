@@ -52,6 +52,10 @@ set(RISCOS_ELF2AIF "${RISCOS_TOOLCHAIN}/bin/elf2aif" CACHE FILEPATH "elf2aif")
 set(CMAKE_C_FLAGS_INIT "-mfpu=${FPU} -mfloat-abi=hard -fstack-clash-protection")
 set(CMAKE_CXX_FLAGS_INIT "${CMAKE_C_FLAGS_INIT}")
 set(CMAKE_EXE_LINKER_FLAGS_INIT "-static")
+# Optimisation comes from the build type: Release unless one is given.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Release unless given (cmake/riscos.cmake)")
+endif()
 
 set(CMAKE_FIND_ROOT_PATH "${RISCOS_TOOLCHAIN}/arm-riscos-gnueabihf" "${RISCOS_DEVKIT}")
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)

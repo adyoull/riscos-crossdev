@@ -63,8 +63,9 @@ cd myprog
 make RCD_DIR=../riscos-crossdev check all
 ```
 
-Then rename things: the app directory, `APP_NAME`, the sprite names, the
-`$Dir` variable in `!Run`.
+Then rename things: the app directory and zip in the `Makefile`,
+`APP_NAME` in `src/app.c` (the wimp example), the sprite names, the `$Dir`
+variable in `!Run`.
 
 ## 3. Point your project at riscos-crossdev
 
@@ -91,6 +92,12 @@ project gets the same compiler and libraries. Three ways, best first:
 - **Only the toolchain.** If all you need is the compiler, unpack the
   release's toolchain tarball anywhere and set `RISCOS_TOOLCHAIN` to it.
   You lose the checks and the tests.
+
+In a shell, the commands in this guide use `$RCD_DIR` for that directory:
+
+```sh
+export RCD_DIR=$HOME/riscos-crossdev     # or your submodule's path
+```
 
 To share one toolchain between several projects or checkouts, install it
 once and set `RISCOS_TOOLCHAIN` (and `RISCOS_DEVKIT`) in your environment:
@@ -140,7 +147,8 @@ cmake -B build-riscos -DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/riscos.cmake -DCMAKE
 cmake --build build-riscos
 ```
 
-It sets the compiler, the RISC OS flags and `-static`, and makes
+It sets the compiler, the RISC OS flags and `-static` (optimisation comes
+from the build type: Release unless you give another), and makes
 `find_package`, `find_library`, `find_path` and `pkg_check_modules` search
 the toolchain and the devkit, never the host. CMake sees the system as
 `RISCOS`, with `UNIX` set too, so:
@@ -169,7 +177,7 @@ cmake --build build-qemu && ctest --test-dir build-qemu
 ## 6. Build with configure (autotools)
 
 ```sh
-. $RCD_DIR/env.sh                     # PATH, RISCOS_CFLAGS, RISCOS_DEVKIT
+. $RCD_DIR/env.sh                     # PATH, RISCOS_CFLAGS, RISCOS_DEVKIT (bash, zsh, or sh with RCD_DIR set)
 PKG_CONFIG_LIBDIR=$RISCOS_DEVKIT/lib/pkgconfig PKG_CONFIG_PATH= \
 ./configure --host=arm-riscos-gnueabihf --disable-shared \
     CFLAGS="$RISCOS_CFLAGS" CXXFLAGS="$RISCOS_CFLAGS" \
@@ -179,7 +187,8 @@ $RCD_DIR/checks/check-all.sh src/myprog
 ```
 
 - `--host=arm-riscos-gnueabihf` makes it a cross build: configure doesn't
-  try to run what it compiles.
+  try to run what it compiles. (`--disable-shared` is for packages that
+  use libtool; others warn that they don't know it, which is harmless.)
 - `PKG_CONFIG_LIBDIR` makes `pkg-config` read the devkit's `.pc` files and
   never your Linux system's. The devkit's `.pc` files work out their own
   paths, and list every library a static link needs.
@@ -200,9 +209,14 @@ OpenGL ES 1 and 2, GLU, SDL2, freeglut, OpenAL and zlib, built for this
 toolchain. With Make:
 
 ```make
-CFLAGS += $(DEVKIT_CFLAGS)                                  # -I.../include
-LIBS := $(DEVKIT_LDFLAGS) $(shell $(RISCOS_PKG_CONFIG) --libs --static sdl2)
+SDL_CFLAGS := $(shell $(RISCOS_PKG_CONFIG) --cflags sdl2)
+SDL_LIBS := $(shell $(RISCOS_PKG_CONFIG) --libs --static sdl2)
+out/game: $(SRC) $(RO_CC) | riscos-toolchain-present
+	$(RO_CC) $(RISCOS_CFLAGS) $(SDL_CFLAGS) $(RISCOS_LDFLAGS) -o $@ $(SRC) $(SDL_LIBS)
 ```
+
+(`$(DEVKIT_CFLAGS)` and `$(DEVKIT_LDFLAGS)` are the plain `-I` and `-L` for
+the devkit, if you'd rather name the libraries yourself.)
 
 `RISCOS_PKG_CONFIG` is `pkg-config` reading only the devkit's `.pc` files.
 Its `README.md` (in `devkit/env`) says which libraries each part needs, in
@@ -247,6 +261,7 @@ out/!MyApp/!RunImage,ff8: out/myprog
 	$(RO_STRIP) -o out/myprog.stripped out/myprog
 	$(ELF2AIF) -e out/myprog.stripped $@
 out/!MyApp/!Sprites,ff9: icon.png icon-small.png
+	@mkdir -p $(dir $@)
 	$(PNG2SPRITE) $@ '!myapp=icon.png' 'sm!myapp=icon-small.png'
 out/MyApp.zip: out/!MyApp/!RunImage,ff8 out/!MyApp/!Sprites,ff9
 	cp app/!Run,feb app/!Boot,feb app/!Help,fff out/!MyApp/
