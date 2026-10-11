@@ -38,10 +38,14 @@ $(EMU_OBJ): emu/example/elapsed.s | riscos-toolchain-present
 
 check: riscos-toolchain-present
 	@echo "== scripts parse"
-	@for s in env.sh toolchain/*.sh qemu/*.sh checks/*.sh devkit/*.sh; do bash -n $$s || exit 1; done
+	@for s in env.sh toolchain/*.sh qemu/*.sh checks/*.sh devkit/*.sh fake/*.sh fake/ports/*.sh; do bash -n $$s || exit 1; done
 	@python3 -m py_compile checks/*.py package/*.py emu/*.py emu/example/*.py && rm -rf checks/__pycache__ package/__pycache__ emu/__pycache__ emu/example/__pycache__
 	@echo "== the checks catch what they look for"
 	RISCOS_TOOLCHAIN=$(abspath $(RISCOS_TOOLCHAIN)) checks/selftest.sh
+	@echo "== the Fake RISC OS: itself, its SWI numbers, the ports' fakes"
+	@mkdir -p out && $(FAKE_CC) $(FAKE_CFLAGS) -o out/fake-selftest fake/selftest.c $(FAKE_SRC) && out/fake-selftest
+	RISCOS_TOOLCHAIN=$(abspath $(RISCOS_TOOLCHAIN)) fake/gen-swinames.sh --check
+	RISCOS_TOOLCHAIN=$(abspath $(RISCOS_TOOLCHAIN)) RISCOS_DEVKIT=$(abspath $(RISCOS_DEVKIT)) fake/ports/check.sh
 	@echo "== qemu-arm-aligntrap traps like RISC OS"
 	RISCOS_TOOLCHAIN=$(abspath $(RISCOS_TOOLCHAIN)) qemu/selftest.sh
 	@echo "== examples/hello: build, checks, Fake RISC OS test, QEMU test"

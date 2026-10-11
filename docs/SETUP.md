@@ -32,10 +32,10 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.5 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.6 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
-release changes only the devkit, it keeps the previous toolchain: 1.5 uses
-1.4's tarball.
+release doesn't change the toolchain, it keeps the previous one's tarball:
+1.5 and 1.6 use 1.4's.
 
 **Prebuilt** (a few minutes):
 

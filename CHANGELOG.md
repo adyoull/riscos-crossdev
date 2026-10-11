@@ -1,5 +1,23 @@
 # Changes
 
+## 1.6
+
+- **Every port's fakes, in `fake/ports/`**: riscos-unixlib, riscos-mesa,
+  riscos-gtk, riscos-ffmpeg, riscos-midisynth, riscos-matinee,
+  riscos-reelhwaccel and riscos-ysflight, copied unchanged with where each
+  came from (`MANIFEST`: repository, commit, path, sha256).
+  `fake/ports/update.sh` takes the latest from GitHub and lists what
+  changed. `make check` fails if a copy here is edited, and compiles the
+  ones that stand on their own. `fake/ports/README.md` says what each fakes.
+- The Fake RISC OS's `swis.h` now has every SWI number in UnixLib's
+  `swis.h` (`fake/swinames.h`, from `fake/gen-swinames.sh`), and UnixLib's
+  register masks: `_OUT(_FLAGS)` and `_RETURN(_FLAGS)` were wrong before
+  (`_FLAGS` was the mask bit itself), and `_swix` returns
+  `_kernel_oserror *`, as on RISC OS. `fake/selftest.c` tests the fake.
+- `examples/hello` relinks when the toolchain changes (a stale `out/hello`
+  linked with an older UnixLib went unnoticed until `check-unixlib.sh`).
+- The toolchain is unchanged (1.4's tarball).
+
 ## 1.5
 
 - The riscos-mesa devkit 20.3.5-15 (was 20.3.5-12). `make check-devkit`

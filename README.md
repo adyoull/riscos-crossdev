@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.5 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.6 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -50,7 +50,7 @@ that Linux doesn't (read this one before porting anything).
 | `devkit/` | Install and check the riscos-mesa devkit (named, with its sha256, in `devkit/DEVKIT`) |
 | `checks/` | The checks, and a self-test that shows each one catching its fault |
 | `package/` | `rozip.py`: zips that keep RISC OS filetypes |
-| `fake/` | The Fake RISC OS: `kernel.h`, `swis.h` and a SWI dispatcher for Linux builds |
+| `fake/` | The Fake RISC OS: `kernel.h`, `swis.h` (every SWI number) and a SWI dispatcher for Linux builds; `fake/ports/`, every port's own fakes, with where each came from |
 | `qemu/` | The alignment-trap patch for QEMU, its build script, `aligntrap.sh` |
 | `emu/` | Unicorn runner for module and assembler code, with an example |
 | `examples/hello/` | A small program with all of the above wired up |
