@@ -4,7 +4,7 @@
 #   out/test_foo: test_foo.c foo.c $(FAKE_SRC)
 #   	$(FAKE_CC) $(FAKE_CFLAGS) -o $@ $^
 #
-# 32-bit (-m32, needs gcc-multilib) so int and pointers are the same size,
+# 32-bit (-m32, needs gcc-13-multilib on Ubuntu 24.04) so int and pointers are the same size,
 # as on RISC OS. -funsigned-char: char is unsigned on ARM, signed on x86.
 FAKE_DIR := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 FAKE_CC ?= gcc

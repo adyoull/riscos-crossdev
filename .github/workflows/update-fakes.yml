@@ -21,15 +21,17 @@ jobs:
   update:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Packages
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-multilib gcc-arm-linux-gnueabihf \
-            libc6-dev-armhf-cross libglib2.0-0 libcairo2-dev gawk zip unzip
+          # gcc-13-multilib, not gcc-multilib: on Ubuntu 24.04 gcc-multilib
+          # conflicts with gcc-arm-linux-gnueabihf, and apt stops (exit 100).
+          sudo apt-get install -y gcc-13-multilib gcc-arm-linux-gnueabihf \
+            libc6-dev-armhf-cross libglib2.0-0t64 libcairo2-dev gawk zip unzip
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             toolchain/dl
@@ -67,7 +69,7 @@ jobs:
             fi
           } > "$RUNNER_TEMP/body.md"
 
-      - uses: peter-evans/create-pull-request@v6
+      - uses: peter-evans/create-pull-request@v8
         with:
           branch: update-fakes
           add-paths: fake

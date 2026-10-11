@@ -8,7 +8,7 @@ and newer); elsewhere, including ARM64 machines, build it from source.
 ## 1. Packages
 
 ```sh
-sudo apt-get install build-essential gcc-multilib \
+sudo apt-get install build-essential gcc-13-multilib \
     gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
     python3 python3-venv curl xz-utils zip unzip git
 # only to build the toolchain from source (make toolchain):
@@ -22,8 +22,10 @@ pip install unicorn          # or: pip install --user unicorn
 
 What each is for:
 
-- `gcc-multilib`: the Fake RISC OS tests are built 32-bit (`-m32`), so an
-  `int` can hold a pointer, as on RISC OS.
+- `gcc-13-multilib`: the Fake RISC OS tests are built 32-bit (`-m32`), so an
+  `int` can hold a pointer, as on RISC OS. Not `gcc-multilib`: on Ubuntu
+  24.04 that conflicts with `gcc-arm-linux-gnueabihf`, and apt either
+  refuses or removes the ARM compiler.
 - `gcc-arm-linux-gnueabihf`, `libc6-dev-armhf-cross`: your portable code
   built for ARM Linux, to run under QEMU.
 - `libglib2.0-0` (installed with most desktops; `libglib2.0-dev` pulls it
