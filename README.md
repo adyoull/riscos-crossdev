@@ -85,8 +85,11 @@ and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
 
 ## Support
 
-As is. Fixes happen at the maintainer's own pace, and there's no issue
-tracker. You're welcome to fork it.
+As is. Report problems and ideas in
+[GitHub Issues](https://github.com/adyoull/riscos-crossdev/issues): say
+which release you used (`git describe --tags`), what you ran, and what
+`make check` says. Fixes happen at the maintainer's own pace. You're
+welcome to fork it.
 
 ## Licence
 

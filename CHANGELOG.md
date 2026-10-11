@@ -29,6 +29,7 @@
   `make check`) compares each port's `swis.h` and `kernel.h` with UnixLib's
   (SWI numbers, register masks, `_kernel_oserror`, `_kernel_swi_regs`).
   The ports keep their own headers.
+- GitHub Issues are on: report problems there (README, Support).
 - The toolchain is unchanged (1.4's tarball), and the devkit is still
   20.3.5-15.
 
