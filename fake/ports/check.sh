@@ -1,7 +1,7 @@
 #!/bin/bash
-# Check fake/ports: every copy is what MANIFEST recorded (fix fakes in the
-# port they came from, then fake/ports/update.sh), and the fakes that stand
-# on their own still compile on this host. Fakes that need their port's
+# Check fake/ports: every copy is what fake/fake_origin.md recorded (fix
+# fakes in the port they came from, then fake/ports/update.sh), and the
+# fakes that stand on their own still compile on this host. Fakes that need their port's
 # sources (reelcore, the HEVC block, mmaldecode, UnixLib internals for the
 # emulator stubs) are only checked by their own port's tests.
 #   fake/ports/check.sh            (run by make check)
@@ -10,7 +10,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 . "$HERE/../../env.sh"
 cd "$HERE"
 fails=0
-echo "-- copies match MANIFEST"
+echo "-- copies match fake/fake_origin.md"
 n=0
 while read -r f sum repo commit path; do
   case $f in ''|'#'*) continue;; esac
@@ -18,10 +18,10 @@ while read -r f sum repo commit path; do
   if [ ! -f "$f" ]; then echo "WRONG: $f is missing"; fails=$((fails+1)); continue; fi
   [ "$(sha256sum < "$f" | cut -d' ' -f1)" = "$sum" ] ||
     { echo "WRONG: $f was edited here (it's $repo $commit:$path; fix it there and run update.sh)"; fails=$((fails+1)); }
-done < MANIFEST
-extra=$(find . -type f ! -name FILES ! -name MANIFEST ! -name README.md ! -name '*.sh' | sed 's|^\./||' |
-        while read -r f; do grep -q "^$f " MANIFEST || echo "$f"; done)
-[ -z "$extra" ] || { echo "WRONG: not in MANIFEST: $extra"; fails=$((fails+1)); }
+done < <(./origin.sh)
+extra=$(find . -type f ! -name FILES ! -name REPORTED ! -name README.md ! -name '*.sh' | sed 's|^\./||' |
+        grep -vxF -f <(./origin.sh | cut -d' ' -f1))
+[ -z "$extra" ] || { echo "WRONG: not in fake/fake_origin.md: $extra"; fails=$((fails+1)); }
 echo "$n files checked"
 
 echo "-- the standalone fakes compile"

@@ -16,3 +16,6 @@ qemu/work/
 out/
 __pycache__/
 *.pyc
+build-riscos/
+build-qemu/
+build-host/

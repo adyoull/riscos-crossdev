@@ -1,0 +1,10 @@
+| !Run for !Tally - an example from riscos-crossdev
+| tally is a UnixLib program converted to Absolute (AIF), so it needs
+| SharedUnixLibrary and ARMEABISupport (both from PackMan), not !SharedLibs.
+Set Tally$Dir <Obey$Dir>
+Set Alias$Tally Run <Tally$Dir>.tally %%*0
+RMEnsure SharedUnixLibrary 1.16 IfThere System:Modules.SharedULib Then RMLoad System:Modules.SharedULib
+RMEnsure SharedUnixLibrary 1.16 Error Tally needs SharedUnixLibrary 1.16 or later. Install it with PackMan.
+RMEnsure ARMEABISupport 0 IfThere System:Modules.ARMEABISupport Then RMLoad System:Modules.ARMEABISupport
+RMEnsure ARMEABISupport 0 Error Tally needs the ARMEABISupport module. Install it with PackMan.
+TaskWindow "<Tally$Dir>.tally <Tally$Dir>.!Help" -wimpslot 2048K -name "Tally" -display

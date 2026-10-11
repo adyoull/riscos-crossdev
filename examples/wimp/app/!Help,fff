@@ -1,0 +1,19 @@
+Clicks 1.0 for RISC OS
+======================
+
+An example desktop program from riscos-crossdev: a Wimp task written in C,
+cross-compiled on Linux with GCCSDK GCC 10.2, tested there against the Fake
+RISC OS, checked, and zipped with RISC OS filetypes.
+
+Double-click !Clicks. Its icon appears on the icon bar.
+
+  Select on the icon     opens the window
+  Select in the window   counts a click
+  Adjust in the window   starts the count again
+  Menu on the icon       Quit
+
+Requirements: RISC OS 5 on an ARMv7 machine with VFP (a Raspberry Pi 2
+or later, or a Cortex-A8/A9 board); SharedUnixLibrary 1.16 or later and
+ARMEABISupport, both from PackMan.
+
+Source and licence: the riscos-crossdev repository, examples/wimp (MIT).

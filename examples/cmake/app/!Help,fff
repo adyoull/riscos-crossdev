@@ -1,0 +1,16 @@
+Tally 1.0 for RISC OS
+=====================
+
+An example program from riscos-crossdev, built with CMake: it lists the
+words used most often in a text file, which may be gzipped.
+
+Double-click !Tally to count the words in this file. After that, from
+the command line (F12):
+
+  *Tally <file> [<how many>]
+
+Requirements: RISC OS 5 on an ARMv7 machine with VFP (a Raspberry Pi 2
+or later, or a Cortex-A8/A9 board); SharedUnixLibrary 1.16 or later and
+ARMEABISupport, both from PackMan.
+
+Source and licence: the riscos-crossdev repository, examples/cmake (MIT).

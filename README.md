@@ -23,23 +23,42 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.6 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.7 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
 make devkit        # optional: the riscos-mesa devkit (OpenGL, EGL, SDL2, OpenAL)
-make check         # the checks, a Fake RISC OS test and a QEMU test
-make hello         # examples/hello/out/Hello.zip, ready for the Pi
+make check         # the self-tests, and every example built and tested
+make examples      # three example programs, zipped and ready for the Pi
 ```
 
 Use a tagged release, not `main`: each tag names exactly one toolchain
 tarball and its sha256, and `main` may be ahead of it.
 
-To start your own program, copy `examples/hello` and point its `RCD_DIR`
-at this repo. [docs/SETUP.md](docs/SETUP.md) covers the toolchain,
-[docs/TESTING.md](docs/TESTING.md) the tests, and
-[docs/RISCOS-RULES.md](docs/RISCOS-RULES.md) the rules RISC OS enforces
-that Linux doesn't (read this one before porting anything).
+## Documentation
+
+| Read | For |
+|---|---|
+| [docs/SETUP.md](docs/SETUP.md) | Installing: packages, the toolchain (prebuilt or from source), the devkit |
+| [docs/USING.md](docs/USING.md) | **Your own program:** starting from an example, building with Make, CMake or configure, libraries, making the app, testing, porting |
+| [docs/RISCOS-RULES.md](docs/RISCOS-RULES.md) | What RISC OS enforces that Linux doesn't. Read it before porting anything |
+| [docs/TESTING.md](docs/TESTING.md) | Each test layer: the checks, the Fake RISC OS and the ports' fakes, QEMU, Unicorn |
+| [docs/PI-TESTING.md](docs/PI-TESTING.md) | Testing on a Raspberry Pi |
+| [docs/REFERENCE.md](docs/REFERENCE.md) | Every command, setting and file |
+
+## Examples
+
+Each builds, passes every check, has tests that run on Linux, and makes a
+zip for the Pi. Copy the closest one to start (USING.md, section 2).
+
+| Example | What | Shows |
+|---|---|---|
+| [`examples/hello`](examples/hello) | A command-line program | A Makefile with every step; a Fake RISC OS test; a QEMU test |
+| [`examples/wimp`](examples/wimp) | A desktop program: icon bar icon, window, menu | Testing Wimp code by faking the Wimp's SWIs; `!Sprites` from PNGs |
+| [`examples/cmake`](examples/cmake) | A library and a program, with CMake | One `CMakeLists.txt` built for RISC OS, for ARM Linux under QEMU (ctest), and for the host; a devkit library via `find_package` |
+
+The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
+(`devkit/env/examples`).
 
 ## Layout
 
@@ -49,11 +68,13 @@ that Linux doesn't (read this one before porting anything).
 | `toolchain/` | Build the toolchain from source, or install the prebuilt one; `elf2aif` with the >32 MB fix; the PThreadTicker module |
 | `devkit/` | Install and check the riscos-mesa devkit (named, with its sha256, in `devkit/DEVKIT`) |
 | `checks/` | The checks, and a self-test that shows each one catching its fault |
-| `package/` | `rozip.py`: zips that keep RISC OS filetypes |
-| `fake/` | The Fake RISC OS: `kernel.h`, `swis.h` (every SWI number) and a SWI dispatcher for Linux builds; `fake/ports/`, every port's own fakes, with where each came from |
+| `cmake/` | CMake toolchain files for RISC OS and for ARM Linux under QEMU, and `riscos_checks()`/`riscos_aif()` |
+| `package/` | `rozip.py`: zips that keep RISC OS filetypes; `png2sprite.py`: sprite files from PNGs |
+| `fake/` | The Fake RISC OS: `kernel.h`, `swis.h` (every SWI number in UnixLib and the ports) and a SWI dispatcher for Linux builds; `fake/ports/`, every port's own fakes, kept up to date from the ports, with where each came from in `fake/fake_origin.md` |
 | `qemu/` | The alignment-trap patch for QEMU, its build script, `aligntrap.sh` |
 | `emu/` | Unicorn runner for module and assembler code, with an example |
-| `examples/hello/` | A small program with all of the above wired up |
+| `examples/` | Three programs with all of the above wired up |
+| `.github/workflows/` | Every Monday: take the ports' latest fakes, `make check`, open a pull request |
 | `docs/` | Setup, testing, RISC OS rules, testing on a Pi |
 
 The large pieces are linked, not copied: UnixLib comes from

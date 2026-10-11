@@ -1,0 +1,2 @@
+# Problems in the ports' headers already sent to the port in a handoff.
+# One line each, exactly as fake/ports/check-headers.sh prints it.

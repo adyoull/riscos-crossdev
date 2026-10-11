@@ -1,0 +1,3 @@
+| !Boot for !Clicks: the Filer runs this when it first sees the application
+If "<Clicks$Dir>"="" Then Set Clicks$Dir <Obey$Dir>
+IconSprites <Obey$Dir>.!Sprites

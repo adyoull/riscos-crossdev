@@ -19,20 +19,32 @@ still owned by the port it came from, and is kept up to date from there.
 | `reelhwaccel/` | [riscos-reelhwaccel](https://github.com/adyoull/riscos-reelhwaccel) | `tests/host/` | GPL version 2 |
 | `ysflight/` | [riscos-ysflight](https://github.com/adyoull/riscos-ysflight) | `tests/` | BSD 3-clause (its `LICENSE`) |
 
+The commit and path of every file, with links, are in
+[`../fake_origin.md`](../fake_origin.md).
+
 - **`FILES`** lists what is copied: port, repository, the path prefix
   dropped here, and the path in the repository. To take another fake, or
-  stop taking one, edit it.
-- **`MANIFEST`** records, for each file here, its sha256, the repository,
-  the commit it was copied at and its path there. It's generated: don't edit
-  it.
+  stop taking one, edit it and run `update.sh`.
 - **`update.sh`** clones each repository's latest commit from GitHub, copies
-  the files again and lists what changed (old commit → new commit). Review
-  with `git diff fake/ports`, run `make check`, commit.
-  `update.sh CHECKOUTS` does the same from checkouts you already have.
+  the files again, regenerates `fake/swinames.h` and `fake/fake_origin.md`,
+  and lists what changed (old commit → new commit). `update.sh CHECKOUTS`
+  does the same from checkouts you already have. Then run `make check`
+  and commit.
+- **Every Monday** `.github/workflows/update-fakes.yml` does that on GitHub
+  and opens a pull request if anything changed.
 - **`check.sh`** (part of `make check`) fails if a file here no longer
-  matches `MANIFEST`. Don't fix a fake here: fix it in its port, then run
-  `update.sh`, so the two never drift apart. It also compiles the fakes
-  that stand on their own.
+  matches `fake_origin.md`. Don't fix a fake here: fix it in its port, then
+  update, so the two never drift apart. It also compiles the fakes that
+  stand on their own.
+- **`check-headers.sh`** (part of `make check`) checks each port's `swis.h`
+  and `kernel.h` against UnixLib's (SWI numbers, register masks, the
+  `_kernel_oserror` and `_kernel_swi_regs` layouts). Send what it finds to
+  the port in a handoff, and list it in `REPORTED` until the port fixes it.
+
+The ports keep their own `kernel.h` and `swis.h`: their tests don't depend
+on a crossdev checkout, and some build 64-bit with `long` registers on
+purpose. Crossdev's own `fake/` is the shared set for new programs, and its
+`swinames.h` gets every SWI the ports define.
 
 ## What each fakes
 

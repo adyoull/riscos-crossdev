@@ -34,8 +34,12 @@ RISCOS_LDFLAGS ?= -static
 #      $(DEVKIT_LDFLAGS) -lEGL -lOSMesa -lstdc++ -lz -lm   (devkit README)
 DEVKIT_CFLAGS := -I$(RISCOS_DEVKIT)/include
 DEVKIT_LDFLAGS := -L$(RISCOS_DEVKIT)/lib
+# pkg-config for the devkit's libraries (never the host's), e.g.
+#   $(shell $(RISCOS_PKG_CONFIG) --cflags --libs --static sdl2)
+RISCOS_PKG_CONFIG := PKG_CONFIG_LIBDIR=$(RISCOS_DEVKIT)/lib/pkgconfig PKG_CONFIG_PATH= pkg-config
 
 ROZIP := python3 $(RCD_DIR)/package/rozip.py
+PNG2SPRITE := python3 $(RCD_DIR)/package/png2sprite.py
 CHECK_ALL := $(RCD_DIR)/checks/check-all.sh
 CHECK_UNALIGNED := $(RCD_DIR)/checks/check-unaligned.sh
 ALIGNTRAP := $(RCD_DIR)/qemu/aligntrap.sh

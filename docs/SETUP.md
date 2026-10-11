@@ -14,7 +14,9 @@ sudo apt-get install build-essential gcc-multilib \
 # only to build the toolchain from source (make toolchain):
 sudo apt-get install autogen autoconf2.69 autoconf2.64 automake1.11 automake \
     libtool texinfo gperf flex bison m4 gawk ninja-build libglib2.0-dev
-# optional, for the Unicorn test (emu/):
+# optional: CMake builds (cmake/, examples/cmake), the Unicorn test (emu/),
+# and compiling riscos-gtk's fake desktop in make check:
+sudo apt-get install cmake libcairo2-dev
 pip install unicorn          # or: pip install --user unicorn
 ```
 
@@ -32,10 +34,10 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.6 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.7 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
-1.5 and 1.6 use 1.4's.
+1.5, 1.6 and 1.7 use 1.4's.
 
 **Prebuilt** (a few minutes):
 
@@ -85,20 +87,21 @@ make prebuilt       # installs there
 
 ## 3. Using it for your own program
 
-From a Makefile:
+[USING.md](USING.md) is the guide: starting from an example, pointing your
+project at a release, building with Make, CMake or configure, libraries,
+making the application, and testing. In short:
 
 ```make
 RCD_DIR := $(HOME)/riscos-crossdev
-include $(RCD_DIR)/riscos.mk
-# gives RO_CC, RO_CXX, RO_STRIP, ELF2AIF, RISCOS_CFLAGS, RISCOS_LDFLAGS,
-# ROZIP, CHECK_ALL, CHECK_UNALIGNED, ALIGNTRAP, QEMU_ALIGNTRAP,
-# LINUXARM_CC/CFLAGS and FAKE_CC/FAKE_CFLAGS/FAKE_SRC
+include $(RCD_DIR)/riscos.mk          # RO_CC, RISCOS_CFLAGS, the checks, the fake...
 ```
 
-From a shell script, or for autoconf/CMake builds:
+```sh
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=$HOME/riscos-crossdev/cmake/riscos.cmake
+```
 
 ```sh
-. $HOME/riscos-crossdev/env.sh     # PATH, RISCOS_CFLAGS, RISCOS_HOST
+. $HOME/riscos-crossdev/env.sh        # PATH, RISCOS_CFLAGS, RISCOS_HOST
 ./configure --host=arm-riscos-gnueabihf CFLAGS="$RISCOS_CFLAGS" LDFLAGS=-static
 ```
 
@@ -107,22 +110,11 @@ no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
 `-static` to links that don't say `-shared`, `-r` or `-mmodule` (keeping
 `-static` in `LDFLAGS` does no harm).
 
-`examples/hello/Makefile` shows the whole path: compile, check, strip,
-`elf2aif`, zip. Copy it to start.
-
-Two traps with configure scripts, from the ports:
-
-- Scripts older than about 2018 don't know the `riscos` system: replace
-  their `config.sub` and `config.guess` with current ones
-  (`/usr/share/automake-*/config.{sub,guess}`).
-- autoconf and libtool can't cope with spaces in `--prefix` or in `-I`/`-L`
-  paths. Keep your build directories free of spaces.
-
 ## 4. Libraries: the riscos-mesa devkit
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.5: **20.3.5-15**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.7: **20.3.5-15**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh

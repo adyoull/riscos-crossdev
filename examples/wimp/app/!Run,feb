@@ -1,0 +1,11 @@
+| !Run for !Clicks - an example from riscos-crossdev
+| !RunImage is a UnixLib program converted to Absolute (AIF), so it needs
+| SharedUnixLibrary and ARMEABISupport (both from PackMan), not !SharedLibs.
+Set Clicks$Dir <Obey$Dir>
+IconSprites <Clicks$Dir>.!Sprites
+RMEnsure SharedUnixLibrary 1.16 IfThere System:Modules.SharedULib Then RMLoad System:Modules.SharedULib
+RMEnsure SharedUnixLibrary 1.16 Error Clicks needs SharedUnixLibrary 1.16 or later. Install it with PackMan.
+RMEnsure ARMEABISupport 0 IfThere System:Modules.ARMEABISupport Then RMLoad System:Modules.ARMEABISupport
+RMEnsure ARMEABISupport 0 Error Clicks needs the ARMEABISupport module. Install it with PackMan.
+WimpSlot -min 1024K -max 1024K
+Run <Clicks$Dir>.!RunImage

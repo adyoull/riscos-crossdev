@@ -1,5 +1,37 @@
 # Changes
 
+## 1.7
+
+- **Documentation for using the kit:** `docs/USING.md`, the guide from an
+  empty directory to a zip for the Pi (Make, CMake, configure, libraries,
+  C++, the app, testing, moving to a new release, a porting checklist), and
+  `docs/REFERENCE.md`, every command, setting and file.
+- **Two more examples,** built and tested by `make check`:
+  `examples/wimp`, a desktop program (icon bar icon, window, menu) whose
+  test fakes the ten Wimp SWIs it uses; and `examples/cmake`, one
+  `CMakeLists.txt` built for RISC OS, for ARM Linux with ctest under
+  `qemu-arm-aligntrap`, and for the host. `make examples` builds all three.
+- **CMake:** `cmake/riscos.cmake` (toolchain file: static, the RISC OS
+  flags, searches the toolchain and devkit, `pkg_check_modules` reads the
+  devkit's `.pc` files), `cmake/RiscOS.cmake` (`riscos_checks()`,
+  `riscos_aif()`), and `cmake/linux-arm-aligntrap.cmake`.
+- **`package/png2sprite.py`:** sprite files (`!Sprites`) from PNGs, with a
+  self-test. `riscos.mk` has `PNG2SPRITE` and `RISCOS_PKG_CONFIG`.
+- **The ports' fakes stay current by themselves.** Where each came from is
+  now `fake/fake_origin.md` (it replaces `fake/ports/MANIFEST`), with links
+  to each file at its commit. `.github/workflows/update-fakes.yml` runs
+  `fake/ports/update.sh` and `make check` every Monday and opens a pull
+  request when a port's fakes change.
+- **One set of SWI numbers:** `fake/swinames.h` is generated from UnixLib's
+  `swis.h` and every port's `swis.h`, so a SWI a port adds reaches it
+  automatically. `fake_origin.md` lists which SWIs each port defines.
+- **The ports' headers are checked:** `fake/ports/check-headers.sh` (in
+  `make check`) compares each port's `swis.h` and `kernel.h` with UnixLib's
+  (SWI numbers, register masks, `_kernel_oserror`, `_kernel_swi_regs`).
+  The ports keep their own headers.
+- The toolchain is unchanged (1.4's tarball), and the devkit is still
+  20.3.5-15.
+
 ## 1.6
 
 - **Every port's fakes, in `fake/ports/`**: riscos-unixlib, riscos-mesa,
