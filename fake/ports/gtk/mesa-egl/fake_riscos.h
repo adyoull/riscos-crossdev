@@ -114,6 +114,9 @@ extern int fake_log_menus;              /* print each menu opened to stderr */
    (reason 17/18/19, block) before the next script entry. */
 extern void (*fake_message_hook)(int reason, int *block, int dest, int icon);
 void fake_queue_message(int reason, const int *block);
+/* Wimp_StartTask: the command, and R0 to return (the new task's handle; 0:
+   it has ended). No hook: an error. */
+extern int (*fake_starttask_hook)(const char *command);
 int fake_new_ref(void);                 /* a my_ref for a queued message */
 extern int fake_dragbox_type, fake_dragboxes;
 /* OS_SpriteOp / Wimp_SpriteOp 36: the pointer shape set last (sprite name,
@@ -153,5 +156,9 @@ extern int fake_wimp_sprites;   /* Wimp_DragBox: type now (-1 none), calls */
    the socket still open), handshake steps, the last host name (SNI) */
 extern int fake_acornssl_sessions, fake_acornssl_closes, fake_acornssl_closed_open, fake_acornssl_handshake_steps;
 extern char fake_acornssl_host[256];
+
+/* The fake filing systems (OS_FSControl 33) and type names (18) */
+const char *fake_fs_name(int no);
+void fake_type_name(int type, int *r2, int *r3);
 
 #endif
