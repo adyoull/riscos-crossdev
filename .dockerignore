@@ -1,0 +1,15 @@
+# What docker/Dockerfile doesn't need from the repo (it installs the
+# toolchain and devkit itself; tarballs in toolchain/dl, devkit/dl are used).
+.git
+toolchain/env
+toolchain/work
+devkit/env
+devkit/env.old
+devkit/out
+qemu/work
+out
+**/out
+**/build-riscos
+**/build-qemu
+**/build-host
+**/__pycache__

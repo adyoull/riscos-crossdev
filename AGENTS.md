@@ -25,6 +25,9 @@ make check         # must end with "== all checks passed"
 
 - On an ARM64 machine there is no prebuilt toolchain: run `make toolchain`
   instead (an hour or more).
+- With Docker, skip all of this: `ghcr.io/adyoull/riscos-crossdev:<version>`
+  has a release installed (`docs/CI.md`). Run builds in it with
+  `docker run --rm -v "$PWD":/src <image> make check all`.
 - To use a toolchain installed somewhere else, set `RISCOS_TOOLCHAIN` and
   `RISCOS_DEVKIT`. `env.sh`, `riscos.mk`, `cmake/riscos.cmake` and every
   script read them.
@@ -69,6 +72,10 @@ on RISC OS) first. Start from the closest example in `examples/`: `hello`
     `name/ext`.
 - **Check SWIs, block layouts and Wimp messages against the PRMs.** Don't
   write them from memory.
+- **CI:** `ci/riscos-build.yml` and `ci/riscos-crossdev-update.yml` build
+  a port on GitHub in the image, pinned by a `.riscos-crossdev` file. The
+  update workflow only opens pull requests; never make it merge or
+  release.
 - **Claim only what you ran.** Say what passed on Linux, and say plainly
   that it hasn't run on RISC OS until a person has tested it there.
 

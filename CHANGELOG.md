@@ -1,5 +1,23 @@
 # Changes
 
+## 1.8
+
+- **A container image of each release,** `ghcr.io/adyoull/riscos-crossdev:<version>`:
+  Ubuntu 24.04 with every package `make check` needs, the release's
+  toolchain and devkit installed, and `RCD_DIR`, `RISCOS_TOOLCHAIN` and
+  `RISCOS_DEVKIT` set. `docker run --rm -v "$PWD":/src <image> make` builds
+  a project on any machine with Docker. `docker/Dockerfile`.
+- **`.github/workflows/docker.yml`** builds the image for each release tag,
+  runs `make check` inside it, builds `examples/wimp` from outside the kit,
+  and only then publishes it.
+- **Workflows for your port's repository, in `ci/`:** `riscos-build.yml`
+  builds it in the image on every push and pull request;
+  `riscos-crossdev-update.yml` checks weekly for a newer riscos-crossdev,
+  builds with it, and opens a pull request saying whether that worked. It
+  never merges or releases anything. `docs/CI.md` says how to use them.
+- The toolchain is unchanged (1.4's tarball), and the devkit is still
+  20.3.5-15.
+
 ## 1.7.2
 
 - **`AGENTS.md`:** a page for AI coding assistants working in this repo or

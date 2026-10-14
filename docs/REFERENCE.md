@@ -27,6 +27,7 @@ them in the environment (or on the `make` command line) to override.
 | `make hello` | `examples/hello/out/Hello.zip` |
 | `make examples` | Every example: hello, wimp, cmake |
 | `make check` | Everything that runs on Linux: the self-tests, the Fake RISC OS, the ports' fakes, QEMU, every example's build and tests, Unicorn, the devkit |
+| `make image` | The container image, tagged `riscos-crossdev` (needs Docker) |
 | `make dist VERSION=x.y` | The toolchain release tarball (maintainer) |
 | `make clean` | Remove build output (not the toolchain or devkit) |
 
@@ -140,6 +141,17 @@ Monday and opens a pull request when a port's fakes have changed.
 | `toolchain/env/riscos/PThrTicker,ffa` | The PThreadTicker module, for threaded programs to ship |
 | `devkit/install.sh [TARBALL]`, `devkit/check.sh` | `make devkit`, `make check-devkit` |
 | `devkit/DEVKIT` | Which devkit this release uses |
+
+## The container image and CI
+
+| File | What |
+|---|---|
+| `docker/Dockerfile` | The image: Ubuntu 24.04, the packages in SETUP.md, the release's toolchain and devkit. `RCD_DIR`, `RISCOS_TOOLCHAIN`, `RISCOS_DEVKIT` set; working directory `/src` |
+| `.github/workflows/docker.yml` | For each release tag (or by hand): build the image, `make check` in it, build `examples/wimp` as a port would, publish `ghcr.io/adyoull/riscos-crossdev:<version>` and `:latest` |
+| `ci/riscos-build.yml` | For a port's repository: build in the image named by `.riscos-crossdev` on every push and pull request; keep the zips |
+| `ci/riscos-crossdev-update.yml` | For a port's repository: weekly, build with a newer riscos-crossdev and open a pull request moving `.riscos-crossdev` |
+
+`docs/CI.md` explains them.
 
 ## Exit statuses worth knowing
 

@@ -1,0 +1,95 @@
+# Once a week, see whether riscos-crossdev has a newer release than the one
+# in .riscos-crossdev. If it has, build this repository with it (in its
+# container image) and open a pull request moving .riscos-crossdev to it,
+# saying whether the build passed. Nothing changes until you merge it, and
+# what you merge has only been tested on Linux: test on RISC OS before you
+# release.
+#
+# Copy to .github/workflows/riscos-crossdev-update.yml, set BUILD as in
+# riscos-build.yml. Needs, in Settings > Actions > General: "Workflow
+# permissions: Read and write" and "Allow GitHub Actions to create and
+# approve pull requests".
+#
+# From riscos-crossdev's ci/ (docs/CI.md). MIT licence.
+name: riscos-crossdev update
+
+on:
+  schedule:
+    - cron: '41 6 * * 2'         # Tuesdays, 06:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  BUILD: make check all          # the same as in riscos-build.yml
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: The latest riscos-crossdev release
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          now=$(tr -d ' \n' < .riscos-crossdev)
+          latest=$(gh api repos/adyoull/riscos-crossdev/releases/latest --jq .tag_name)
+          latest=${latest#v}
+          echo "now=$now" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          if [ "$latest" = "$now" ]; then echo "new=false" >> "$GITHUB_OUTPUT"
+          else echo "new=true" >> "$GITHUB_OUTPUT"; fi
+          echo "this repository: $now; riscos-crossdev's latest: $latest"
+
+      - name: Build with it
+        id: build
+        if: steps.v.outputs.new == 'true'
+        continue-on-error: true
+        env:
+          IMAGE: ghcr.io/adyoull/riscos-crossdev:${{ steps.v.outputs.latest }}
+        run: |
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/src "$IMAGE" \
+            sh -c "$BUILD" 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Leave only the change to .riscos-crossdev
+        if: steps.v.outputs.new == 'true'
+        run: git clean -fdxq && git checkout -- .
+
+      - name: Move .riscos-crossdev and write the pull request
+        if: steps.v.outputs.new == 'true'
+        env:
+          NOW: ${{ steps.v.outputs.now }}
+          LATEST: ${{ steps.v.outputs.latest }}
+          OUTCOME: ${{ steps.build.outcome }}
+        run: |
+          echo "$LATEST" > .riscos-crossdev
+          {
+            echo "riscos-crossdev $LATEST is out (this repository uses $NOW)."
+            echo "Release notes: https://github.com/adyoull/riscos-crossdev/releases/tag/v$LATEST"
+            echo
+            if [ "$OUTCOME" = success ]; then
+              echo "\`$BUILD\` passed with it, on Linux."
+            else
+              echo "**\`$BUILD\` failed with it.** The end of the output:"
+              echo
+              echo '```'
+              tail -40 "$RUNNER_TEMP/build.log"
+              echo '```'
+            fi
+            echo
+            echo "Nothing has run on RISC OS: test there before releasing."
+          } > "$RUNNER_TEMP/body.md"
+
+      - uses: peter-evans/create-pull-request@v8
+        if: steps.v.outputs.new == 'true'
+        with:
+          branch: riscos-crossdev-update
+          add-paths: .riscos-crossdev
+          commit-message: "riscos-crossdev ${{ steps.v.outputs.latest }}"
+          title: "riscos-crossdev ${{ steps.v.outputs.latest }}"
+          body-path: ${{ runner.temp }}/body.md
+          delete-branch: true

@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.7.2 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.8 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -35,6 +35,13 @@ make examples      # three example programs, zipped and ready for the Pi
 Use a tagged release, not `main`: each tag names exactly one toolchain
 tarball and its sha256, and `main` may be ahead of it.
 
+Or, on any machine with Docker (no setup at all), from your project's
+directory:
+
+```sh
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8 make check all
+```
+
 ## Documentation
 
 | Read | For |
@@ -45,6 +52,7 @@ tarball and its sha256, and `main` may be ahead of it.
 | [docs/TESTING.md](docs/TESTING.md) | Each test layer: the checks, the Fake RISC OS and the ports' fakes, QEMU, Unicorn |
 | [docs/PI-TESTING.md](docs/PI-TESTING.md) | Testing on a Raspberry Pi |
 | [docs/REFERENCE.md](docs/REFERENCE.md) | Every command, setting and file |
+| [docs/CI.md](docs/CI.md) | The container image, and building your port on GitHub with pull requests when riscos-crossdev moves on |
 | [AGENTS.md](AGENTS.md) | The short version for AI coding assistants: setup, the rules that matter, and what not to touch |
 
 ## Examples
@@ -75,7 +83,9 @@ The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
 | `qemu/` | The alignment-trap patch for QEMU, its build script, `aligntrap.sh` |
 | `emu/` | Unicorn runner for module and assembler code, with an example |
 | `examples/` | Three programs with all of the above wired up |
-| `.github/workflows/` | Every Monday: take the ports' latest fakes, `make check`, open a pull request |
+| `docker/` | The container image of each release (`ghcr.io/adyoull/riscos-crossdev`) |
+| `ci/` | Workflows for your port's repository: build in the image; a pull request when there's a newer riscos-crossdev |
+| `.github/workflows/` | For each release: build, check and publish the image. Every Monday: take the ports' latest fakes, `make check`, open a pull request |
 | `docs/` | Setup, testing, RISC OS rules, testing on a Pi |
 
 The large pieces are linked, not copied: UnixLib comes from

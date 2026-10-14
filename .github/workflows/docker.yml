@@ -1,0 +1,84 @@
+# For each release tag: build the container image (docker/Dockerfile), run
+# make check inside it, build an example as a port would, and only then
+# publish it as ghcr.io/adyoull/riscos-crossdev:<version> (and :latest).
+# Run it by hand from the Actions tab to rebuild the image of a release.
+#
+# The first publish creates the package as private: make it public once,
+# in the package's settings on GitHub (Package settings > Change visibility).
+name: Container image
+
+on:
+  push:
+    # Releases before 1.8 have no docker/Dockerfile. (GitHub starts no
+    # workflow at all when more than three tags are pushed at once: then run
+    # this by hand, as push-to-github.sh does.)
+    tags: ['v*', '!v1.[0-7]', '!v1.[0-7].*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build, e.g. v1.8 (1.8 or later)'
+        required: true
+      latest:
+        description: 'Also tag the image :latest (for the newest release only)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Version
+        id: v
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          load: true
+          tags: riscos-crossdev:test
+          build-args: VERSION=${{ steps.v.outputs.version }}
+
+      - name: make check inside the image
+        run: docker run --rm riscos-crossdev:test sh -c 'cd /opt/riscos-crossdev && make check'
+
+      - name: An example built outside the kit, as a port would build
+        run: |
+          cp -r examples/wimp "$RUNNER_TEMP/wimp"
+          rm -rf "$RUNNER_TEMP/wimp/out"
+          docker run --rm -v "$RUNNER_TEMP/wimp":/src riscos-crossdev:test make check all
+          test -s "$RUNNER_TEMP/wimp/out/Clicks.zip"
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          # :latest is for the newest release: a pushed tag, or a run by hand
+          # that asks for it.
+          LATEST: ${{ github.event_name == 'push' || inputs.latest }}
+        run: |
+          img=ghcr.io/adyoull/riscos-crossdev
+          docker tag riscos-crossdev:test "$img:$VERSION"
+          docker push "$img:$VERSION"
+          if [ "$LATEST" = true ]; then
+            docker tag riscos-crossdev:test "$img:latest"
+            docker push "$img:latest"
+          fi

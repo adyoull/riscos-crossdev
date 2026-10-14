@@ -1,0 +1,41 @@
+# A port's build on GitHub, in the riscos-crossdev container image.
+# Copy to .github/workflows/riscos-build.yml in your repository, and put the
+# riscos-crossdev version to build with in a file called .riscos-crossdev
+# at the top of the repository (one line, e.g. 1.8). Change BUILD to your
+# build and test command, and ARTIFACTS to what it makes.
+#
+# From riscos-crossdev's ci/ (docs/CI.md). MIT licence.
+name: RISC OS build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  BUILD: make check all          # your build, checks and Linux tests
+  ARTIFACTS: out/*.zip           # what to keep from the build
+
+jobs:
+  pin:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.pin.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: pin
+        run: echo "version=$(tr -d ' \n' < .riscos-crossdev)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: pin
+    runs-on: ubuntu-24.04
+    container: ghcr.io/adyoull/riscos-crossdev:${{ needs.pin.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build, check and test
+        run: ${{ env.BUILD }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: riscos-build
+          path: ${{ env.ARTIFACTS }}
+          if-no-files-found: warn

@@ -9,6 +9,7 @@
 #   make examples    every example: hello, wimp (a desktop program), cmake
 #   make check       every test that runs on Linux (see docs/TESTING.md)
 #   make dist VERSION=x.y   the toolchain tarball for a release
+#   make image       the container image (docker/Dockerfile), as riscos-crossdev
 #
 # Settings: see env.sh (RISCOS_TOOLCHAIN, FPU, JOBS).
 include riscos.mk
@@ -74,6 +75,9 @@ check: riscos-toolchain-present
 	else echo "SKIP (no devkit: make devkit)"; fi
 	@echo "== all checks passed"
 
+image:
+	docker build -f docker/Dockerfile -t riscos-crossdev .
+
 dist:
 	@test -n "$(VERSION)" || { echo "usage: make dist VERSION=x.y" >&2; exit 1; }
 	toolchain/package.sh $(VERSION)
@@ -84,4 +88,4 @@ clean:
 	$(MAKE) -C examples/cmake clean
 	rm -rf checks/selftest/out qemu/selftest/out emu/example/out devkit/out out
 
-.PHONY: all toolchain prebuilt devkit check-devkit hello examples check dist clean
+.PHONY: all toolchain prebuilt devkit check-devkit hello examples check image dist clean
