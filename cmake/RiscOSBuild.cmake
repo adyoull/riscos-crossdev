@@ -1,4 +1,4 @@
-# include(RiscOS) in a project built with cmake/riscos.cmake:
+# include(RiscOSBuild) in a project built with cmake/riscos.cmake:
 #
 #   riscos_checks(TARGET)
 #       after each link, run checks/check-all.sh on the program (static,

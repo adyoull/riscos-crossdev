@@ -48,6 +48,9 @@ check: riscos-toolchain-present
 	@echo "== scripts parse"
 	@for s in env.sh toolchain/*.sh qemu/*.sh checks/*.sh devkit/*.sh fake/*.sh fake/ports/*.sh; do bash -n $$s || exit 1; done
 	@python3 -m py_compile checks/*.py package/*.py emu/*.py emu/example/*.py && rm -rf checks/__pycache__ package/__pycache__ emu/__pycache__ emu/example/__pycache__
+	@echo "== no two names that differ only in case (macOS, Windows and RISC OS can't hold both)"
+	@dups=$$(find . \( -path ./toolchain/env -o -path ./toolchain/work -o -path ./toolchain/dl -o -path ./devkit/env -o -path ./devkit/dl -o -path ./qemu/work -o -name .git \) -prune -o -print | tr 'A-Z' 'a-z' | sort | uniq -d); \
+	  [ -z "$$dups" ] || { echo "WRONG: these differ only in case: $$dups"; exit 1; }
 	@echo "== png2sprite makes sprites RISC OS can read"
 	@python3 -B package/selftest.py
 	@echo "== the checks catch what they look for"

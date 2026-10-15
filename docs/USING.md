@@ -160,7 +160,7 @@ the toolchain and the devkit, never the host. CMake sees the system as
 
 ```cmake
 if(RISCOS)
-  include(RiscOS)                                   # from cmake/RiscOS.cmake
+  include(RiscOSBuild)                              # from cmake/RiscOSBuild.cmake
   riscos_checks(myprog)                             # check-all after each link
   riscos_aif(myprog "${CMAKE_BINARY_DIR}/!MyProg/!RunImage,ff8")
 endif()

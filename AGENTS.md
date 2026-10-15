@@ -100,6 +100,8 @@ on RISC OS) first. Start from the closest example in `examples/`: `hello`
   - A release that doesn't change the toolchain keeps the previous
     release's tarball in `toolchain/PREBUILT`.
   - Check from a clean clone of the tag: `make prebuilt devkit check`.
+- **No two file names that differ only in case:** macOS, Windows and
+  RISC OS ignore case. `make check` checks this.
 - **Files written here are MIT.** Copied files keep their licence: record
   each in `LICENCES.md`.
 - **Keep working notes out of the repo:** `.gitignore` excludes handoffs,

@@ -61,7 +61,7 @@ them in the environment (or on the `make` command line) to override.
 | File | Use |
 |---|---|
 | `cmake/riscos.cmake` | `-DCMAKE_TOOLCHAIN_FILE=` for RISC OS builds. Sets `RISCOS` and `UNIX`; static only; Release unless another build type is given; searches the toolchain and devkit; `pkg_check_modules` reads the devkit's `.pc` files |
-| `cmake/RiscOS.cmake` | `include(RiscOS)`: `riscos_checks(target)` runs `check-all.sh` after each link; `riscos_aif(target path,ff8)` adds `target-aif`, the stripped Absolute file |
+| `cmake/RiscOSBuild.cmake` | `include(RiscOSBuild)`: `riscos_checks(target)` runs `check-all.sh` after each link; `riscos_aif(target path,ff8)` adds `target-aif`, the stripped Absolute file |
 | `cmake/linux-arm-aligntrap.cmake` | Toolchain file for ARM Linux builds whose tests ctest runs under `qemu-arm-aligntrap` |
 | `cmake/Platform/RISCOS.cmake` | CMake's description of the platform (used by `riscos.cmake`) |
 

@@ -25,6 +25,11 @@
 - **The riscos-mesa devkit 20.3.5-16** (was 20.3.5-15). The ports' latest
   fakes need it: riscos-ffmpeg's fake uses its `EGL_WINDOW_SCALE_RISCOS`.
   The two fakes updates opened by the weekly workflow are merged.
+- **Fixed: `cmake/RiscOS.cmake` is now `cmake/RiscOSBuild.cmake`**
+  (`include(RiscOSBuild)`). Its name differed from `cmake/riscos.cmake`
+  only in case, so on macOS and Windows, which ignore case, a clone of 1.7
+  to 1.7.2 had one file in place of the other. `make check` now fails on
+  any two names that differ only in case.
 - The toolchain is unchanged (1.4's tarball).
 
 ## 1.7.2

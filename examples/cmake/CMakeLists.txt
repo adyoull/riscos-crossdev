@@ -29,7 +29,7 @@ if(ZLIB_FOUND)
 endif()
 
 if(RISCOS)
-  include(RiscOS)
+  include(RiscOSBuild)
   riscos_checks(tally-cli)
   riscos_aif(tally-cli "${CMAKE_BINARY_DIR}/!Tally/tally,ff8")
 else()

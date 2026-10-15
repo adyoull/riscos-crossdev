@@ -13,8 +13,8 @@
 # Programs are static (RISC OS has no shared libraries for these), with the
 # flags every RISC OS build needs (docs/RISCOS-RULES.md). CMake sees the
 # system as RISCOS, with UNIX set too (UnixLib is a POSIX C library), so
-# `if(RISCOS)` picks out RISC OS. include(RiscOS) adds riscos_checks() and
-# riscos_aif() (cmake/RiscOS.cmake).
+# `if(RISCOS)` picks out RISC OS. include(RiscOSBuild) adds riscos_checks() and
+# riscos_aif() (cmake/RiscOSBuild.cmake).
 get_filename_component(RCD_DIR "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 foreach(v RISCOS_TOOLCHAIN RISCOS_DEVKIT FPU)
   if(NOT DEFINED ${v} AND DEFINED ENV{${v}})
