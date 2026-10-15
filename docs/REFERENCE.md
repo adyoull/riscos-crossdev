@@ -148,8 +148,9 @@ Monday and opens a pull request when a port's fakes have changed.
 |---|---|
 | `docker/Dockerfile` | The image: Ubuntu 24.04, the packages in SETUP.md, the release's toolchain and devkit. `RCD_DIR`, `RISCOS_TOOLCHAIN`, `RISCOS_DEVKIT` set; working directory `/src` |
 | `.github/workflows/docker.yml` | For each release tag (or by hand): build the image, `make check` in it, build `examples/wimp` as a port would, publish `ghcr.io/adyoull/riscos-crossdev:<version>` and `:latest` |
-| `ci/riscos-build.yml` | For a port's repository: build in the image named by `.riscos-crossdev` on every push and pull request; keep the zips |
-| `ci/riscos-crossdev-update.yml` | For a port's repository: weekly, build with a newer riscos-crossdev and open a pull request moving `.riscos-crossdev` |
+| `ci/riscos-build.yml` | For a port's repository: build in the image named by the `riscos-crossdev` line of `.riscos-deps`, on every push and pull request; keep the zips |
+| `ci/riscos-deps-update.yml` | For a port's repository: daily, when anything in `.riscos-deps` has a newer release, move the pin (and run `ci/riscos-deps-hook.sh`), build, and open a pull request |
+| `.riscos-deps`, `toolchain/deps-hook.sh`, `.github/workflows/update-deps.yml` | riscos-crossdev's own: daily pull requests when riscos-mesa or riscos-unixlib has a newer release |
 
 `docs/CI.md` explains them.
 

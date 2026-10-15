@@ -12,11 +12,20 @@
   and only then publishes it.
 - **Workflows for your port's repository, in `ci/`:** `riscos-build.yml`
   builds it in the image on every push and pull request;
-  `riscos-crossdev-update.yml` checks weekly for a newer riscos-crossdev,
-  builds with it, and opens a pull request saying whether that worked. It
-  never merges or releases anything. `docs/CI.md` says how to use them.
-- The toolchain is unchanged (1.4's tarball), and the devkit is still
-  20.3.5-15.
+  `riscos-deps-update.yml` checks daily whether anything named in its
+  `.riscos-deps` (riscos-crossdev, riscos-mesa, riscos-ffmpeg, ...) has a
+  newer release, builds with it, and opens a pull request saying whether
+  that worked. It never merges or releases anything. `docs/CI.md` says how
+  to use them, and how the repositories feed each other.
+- **riscos-crossdev updates its own upstreams the same way:** `.riscos-deps`
+  names riscos-mesa and riscos-unixlib; `.github/workflows/update-deps.yml`
+  opens a pull request, built and checked, when either has a newer release
+  (`toolchain/deps-hook.sh` updates `devkit/DEVKIT` or `toolchain/SOURCES`).
+  `toolchain/build.sh` now takes UnixLib's file names from `SOURCES`.
+- **The riscos-mesa devkit 20.3.5-16** (was 20.3.5-15). The ports' latest
+  fakes need it: riscos-ffmpeg's fake uses its `EGL_WINDOW_SCALE_RISCOS`.
+  The two fakes updates opened by the weekly workflow are merged.
+- The toolchain is unchanged (1.4's tarball).
 
 ## 1.7.2
 

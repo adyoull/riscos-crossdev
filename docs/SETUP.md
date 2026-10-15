@@ -116,7 +116,7 @@ no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.7: **20.3.5-15**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.8: **20.3.5-16**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -126,7 +126,7 @@ make check-devkit    # its libraries are VFPv3, and its six examples build
 ```
 
 `make check` runs `check-devkit` too once a devkit is installed. If you
-already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-15.tgz`.
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-16.tgz`.
 Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
 moved to `$RISCOS_DEVKIT.old`.
 

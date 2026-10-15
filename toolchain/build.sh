@@ -29,7 +29,10 @@ case "$RISCOS_TOOLCHAIN|$TC|$DL" in *" "*)
   echo "build.sh: RISCOS_TOOLCHAIN, TC and DL must not contain spaces" >&2; exit 1;;
 esac
 "$HERE/fetch.sh" >/dev/null
-UNIXLIB_DIFF=$DL/unixlib-riscos-5.0.3.3.diff
+# UnixLib's diff and the PThreadTicker zip: the names toolchain/SOURCES
+# gives them (a new UnixLib release changes only SOURCES).
+UNIXLIB_DIFF=$DL/$(awk '$1 ~ /^unixlib-riscos-.*\.diff$/ {print $1; exit}' "$HERE/SOURCES")
+PTHTICKER_ZIP=$DL/$(awk '$1 ~ /^PThreadTicker-.*\.zip$/ {print $1; exit}' "$HERE/SOURCES")
 mkdir -p "$TC" "$RISCOS_TOOLCHAIN"; cd "$TC"
 log() { echo "=== $* ($(date +%H:%M))"; }
 
@@ -112,9 +115,9 @@ install_pthticker() {
   local m=$TC/gcc-10.2.0/cross-build/$T/libunixlib/pthticker z=$TC/pthticker-zip
   [ -s "$m" ] || { echo "no $m: UnixLib's build didn't make the module" >&2; exit 1; }
   rm -rf "$z"; mkdir -p "$z" "$RISCOS_TOOLCHAIN/riscos"
-  unzip -q "$DL/PThreadTicker-0.03.zip" -d "$z"
+  unzip -q "$PTHTICKER_ZIP" -d "$z"
   cmp -s "$m" "$z/PThreadTicker/!System/310/Modules/PThrTicker" || {
-    echo "the PThreadTicker built here differs from the v5.0.3.3 release's" >&2; exit 1; }
+    echo "the PThreadTicker built here differs from the release's ($PTHTICKER_ZIP)" >&2; exit 1; }
   cp "$m" "$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa"
   cp "$z/PThreadTicker/ReadMe" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-ReadMe,fff"
   cp "$z/PThreadTicker/Licence" "$RISCOS_TOOLCHAIN/riscos/PThreadTicker-Licence,fff"

@@ -32,27 +32,61 @@ libraries.
 ## Building your port on GitHub
 
 `ci/` has two workflows to copy into your repository's
-`.github/workflows/`. Both read the riscos-crossdev version to use from a
-one-line file, `.riscos-crossdev`, at the top of your repository:
+`.github/workflows/`. Both read `.riscos-deps`, a file at the top of your
+repository that names, one per line, the releases of the owner's other
+repositories your project is built with:
 
-```sh
-echo 1.8 > .riscos-crossdev
 ```
+# NAME TAG: repositories at github.com/adyoull, at a release tag
+riscos-crossdev v1.8
+riscos-mesa v20.3.5-16
+riscos-ffmpeg v5.1.10-riscos22
+```
+
+The `riscos-crossdev` line also chooses the container image
+(`ghcr.io/adyoull/riscos-crossdev:1.8`). For a repository of another
+owner, write `OWNER/NAME`.
 
 1. **`ci/riscos-build.yml`** builds your project in the image on every push
    and pull request, and keeps what it makes (a zip, say) as a download on
    the run's page. Set `BUILD` to your build and test command (default
    `make check all`) and `ARTIFACTS` to what it makes.
-2. **`ci/riscos-crossdev-update.yml`** looks once a week for a newer
-   riscos-crossdev release. When there is one, it builds your project with
-   it and opens a pull request that changes `.riscos-crossdev`, saying
+2. **`ci/riscos-deps-update.yml`** checks every day whether any of those
+   repositories has a newer release. When one has, it moves the pin, builds
+   your project with it, and opens a pull request listing what changed and
    whether the build passed. It changes nothing on its own: you decide
    whether to merge.
+   - If your build also pins a dependency elsewhere (a checksum file,
+     `build/env.sh`), add an executable `ci/riscos-deps-hook.sh`. It's run
+     as `ci/riscos-deps-hook.sh NAME OLD_TAG NEW_TAG` to update those files
+     too. riscos-crossdev's own `toolchain/deps-hook.sh` is an example.
    - It needs, in your repository's Settings > Actions > General:
      "Workflow permissions: Read and write" and "Allow GitHub Actions to
      create and approve pull requests".
    - It builds before opening the pull request because GitHub doesn't
      start workflows for a pull request that a workflow opened.
+   - It only sees **releases** marked as the latest on GitHub. Mark test
+     builds and release candidates as pre-releases, and they're left alone.
+
+## How the repositories feed each other
+
+Each repository watches the releases of the ones it's built with. So a
+change moves down the chain one release at a time, and you approve each
+step:
+
+1. riscos-unixlib or riscos-mesa makes a release.
+2. The next day, riscos-crossdev's own workflow
+   (`.github/workflows/update-deps.yml`) opens a pull request moving
+   `devkit/DEVKIT` or `toolchain/SOURCES` to it, built and checked. You
+   merge it and release riscos-crossdev. A new UnixLib also needs a new
+   toolchain tarball (`make dist`).
+3. The day after, every port whose `.riscos-deps` names riscos-crossdev
+   (or riscos-mesa) gets a pull request, built with the new release.
+4. You merge, test on a Pi, and release the ports you want to. Releasing,
+   say, riscos-ffmpeg's devkit then reaches the repositories built on it,
+   such as Matinee, the same way.
+
+Nothing moves on unless you release, so you decide how far a change goes.
 
 ## What this doesn't do
 

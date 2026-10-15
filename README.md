@@ -92,7 +92,7 @@ The large pieces are linked, not copied: UnixLib comes from
 [riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.3; an unofficial fork of GCCSDK's UnixLib)
 and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
 and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
-(release 20.3.5-15, `make devkit`; see docs/SETUP.md).
+(release 20.3.5-16, `make devkit`; see docs/SETUP.md).
 
 ## Support
 

@@ -72,10 +72,10 @@ on RISC OS) first. Start from the closest example in `examples/`: `hello`
     `name/ext`.
 - **Check SWIs, block layouts and Wimp messages against the PRMs.** Don't
   write them from memory.
-- **CI:** `ci/riscos-build.yml` and `ci/riscos-crossdev-update.yml` build
-  a port on GitHub in the image, pinned by a `.riscos-crossdev` file. The
-  update workflow only opens pull requests; never make it merge or
-  release.
+- **CI:** `ci/riscos-build.yml` and `ci/riscos-deps-update.yml` build a
+  port on GitHub in the image, with the releases it depends on pinned in a
+  `.riscos-deps` file. The update workflow only opens pull requests; never
+  make it merge or release.
 - **Claim only what you ran.** Say what passed on Linux, and say plainly
   that it hasn't run on RISC OS until a person has tested it there.
 
