@@ -78,8 +78,8 @@ project gets the same compiler and libraries. Three ways, best first:
 
   ```sh
   git submodule add https://github.com/adyoull/riscos-crossdev crossdev
-  git -C crossdev checkout v1.8
-  git add crossdev && git commit -m "riscos-crossdev 1.8"
+  git -C crossdev checkout v1.8.1
+  git add crossdev && git commit -m "riscos-crossdev 1.8.1"
   ```
 
   The tag is recorded in your repository, and `RCD_DIR := crossdev` is
@@ -89,9 +89,9 @@ project gets the same compiler and libraries. Three ways, best first:
   (`RCD_DIR=~/riscos-crossdev`) and make your build fail on the wrong
   version: `git -C $(RCD_DIR) describe --tags` must print the tag you
   expect.
-- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.8` has the
+- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.8.1` has the
   release installed, with `RCD_DIR` set: `docker run --rm -v "$PWD":/src
-  ghcr.io/adyoull/riscos-crossdev:1.8 make`. It's also how your port
+  ghcr.io/adyoull/riscos-crossdev:1.8.1 make`. It's also how your port
   builds on GitHub, with a pull request each time riscos-crossdev has a
   new release (CI.md).
 - **Only the toolchain.** If all you need is the compiler, unpack the

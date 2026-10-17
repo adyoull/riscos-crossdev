@@ -14,13 +14,17 @@ ARG BASE=ubuntu:24.04
 FROM ${BASE}
 
 ARG DEBIAN_FRONTEND=noninteractive
-# gcc-13-multilib, not gcc-multilib: on Ubuntu 24.04 gcc-multilib conflicts
-# with gcc-arm-linux-gnueabihf (docs/SETUP.md).
+# docs/SETUP.md's packages, including those for building from source:
+# GCCSDK's builds (UnixLib's among them) regenerate configure scripts with
+# autoconf 2.69 and automake 1.11. gcc-13-multilib, not gcc-multilib: on
+# Ubuntu 24.04 gcc-multilib conflicts with gcc-arm-linux-gnueabihf.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       build-essential gcc-13-multilib gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
       python3 python3-pip ca-certificates curl xz-utils zip unzip git gawk \
       cmake pkg-config libglib2.0-0t64 libcairo2-dev \
+      autogen autoconf2.69 autoconf2.64 automake1.11 automake libtool libtool-bin texinfo \
+      gperf flex bison m4 ninja-build libglib2.0-dev \
  && pip3 install --no-cache-dir --break-system-packages unicorn \
  && rm -rf /var/lib/apt/lists/*
 

@@ -10,7 +10,7 @@ build RISC OS programs on any machine that runs Docker, and on GitHub.
 From your project's directory:
 
 ```sh
-docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8 make check all
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.1 make check all
 ```
 
 - Your project is at `/src`, the working directory. riscos-crossdev is at
@@ -21,7 +21,7 @@ docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8 make check al
   `-DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/riscos.cmake`.
 - **Files you build are owned by root** unless you run as yourself:
   `docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/src ...`
-- **For a shell:** `docker run --rm -it -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8 bash`.
+- **For a shell:** `docker run --rm -it -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.1 bash`.
 - The image is for x86-64. On an ARM Mac or ARM Linux machine Docker runs it
   under emulation: it works, but slowly.
 
@@ -38,13 +38,13 @@ repositories your project is built with:
 
 ```
 # NAME TAG: repositories at github.com/adyoull, at a release tag
-riscos-crossdev v1.8
+riscos-crossdev v1.8.1
 riscos-mesa v20.3.5-16
 riscos-ffmpeg v5.1.10-riscos22
 ```
 
 The `riscos-crossdev` line also chooses the container image
-(`ghcr.io/adyoull/riscos-crossdev:1.8`). For a repository of another
+(`ghcr.io/adyoull/riscos-crossdev:1.8.1`). For a repository of another
 owner, write `OWNER/NAME`.
 
 1. **`ci/riscos-build.yml`** builds your project in the image on every push

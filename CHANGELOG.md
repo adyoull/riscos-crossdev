@@ -1,5 +1,16 @@
 # Changes
 
+## 1.8.1
+
+- **The container image has the packages for building from source:** those
+  `docs/SETUP.md` lists for `make toolchain` (autoconf 2.69 and 2.64,
+  automake 1.11, libtool, texinfo, gperf, flex, bison, m4, ninja and
+  GLib's headers). GCCSDK's builds regenerate their configure scripts with
+  autoconf 2.69 and automake 1.11; riscos-unixlib's library build needs
+  them, and asked for them.
+- The ports' latest fakes (the weekly update's pull request #3).
+- Nothing else changes: the toolchain is 1.4's, the devkit 20.3.5-16.
+
 ## 1.8
 
 - **A container image of each release,** `ghcr.io/adyoull/riscos-crossdev:<version>`:
