@@ -1,5 +1,31 @@
 # Changes
 
+## 1.8.2
+
+- **The container image has what several ports' builds share:** meson,
+  python3-packaging and python3-mako (GLib, GTK and Mesa are meson builds;
+  FFmpeg's dav1d too), and g++-arm-linux-gnueabihf (C++ code built for ARM
+  Linux, to test under QEMU). riscos-gtk and riscos-mesa asked for them.
+  `docs/SETUP.md` lists them as optional.
+- **`PACKAGES` in `ci/riscos-build.yml` and `ci/riscos-deps-update.yml`:**
+  Ubuntu packages one port needs that the image hasn't, installed before
+  its build (riscos-gtk: `python3-pil shared-mime-info`). The image keeps
+  what the kit uses or several ports share; `docs/CI.md` says so.
+- **Fixed: the prebuilt toolchain's `.la` files named the directory it was
+  built in** (`/opt/b14/toolchain/env`). A libtool link of C++ code then
+  failed: libtool follows `libstdc++.la` to `libm.la` and `libunixlib.la`
+  by that path. `make prebuilt` now runs the new `toolchain/relocate.sh`,
+  which points them at where the toolchain is. **With a toolchain from 1.8.1
+  or earlier, run `toolchain/relocate.sh` once** (or `make prebuilt` into
+  an empty directory). `make check` checks it. Found by riscos-mesa.
+- **`checks/check-fpu.sh` refuses a stripped program** (exit 2), instead of
+  reporting VFPv4 instructions that aren't there: without its mapping
+  symbols, objdump decodes the literal pools as code. Check the unstripped
+  ELF. Found by riscos-mesa.
+- **`checks/check-unixlib.sh` no longer needs gawk:** it works with mawk.
+  Found by riscos-mesa and riscos-softmidi.
+- Nothing else changes: the toolchain tarball is 1.4's, the devkit 20.3.5-16.
+
 ## 1.8.1
 
 - **The container image has the packages for building from source:** those

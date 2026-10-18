@@ -18,6 +18,9 @@ sudo apt-get install autogen autoconf2.69 autoconf2.64 automake1.11 automake \
 # and compiling riscos-gtk's fake desktop in make check:
 sudo apt-get install cmake libcairo2-dev
 pip install unicorn          # or: pip install --user unicorn
+# optional: what several ports' builds use (meson builds such as GLib, GTK
+# and Mesa; C++ code tested under QEMU). The container image has these too:
+sudo apt-get install meson python3-packaging python3-mako g++-arm-linux-gnueabihf
 ```
 
 What each is for:
@@ -36,10 +39,10 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.8.1 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.8.2 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
-1.5 to 1.8.1 use 1.4's.
+1.5 to 1.8.2 use 1.4's.
 
 **Prebuilt** (a few minutes):
 
@@ -116,7 +119,7 @@ no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.8: **20.3.5-16**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.8.2: **20.3.5-16**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh

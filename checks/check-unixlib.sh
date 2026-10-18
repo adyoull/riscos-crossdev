@@ -29,7 +29,8 @@ want=${TICKER_BLOCK:-640}
 # __pthread_callevery_block_size, a little-endian word in .data
 addr=$("$NM" "$ELF" | awk '$3=="__pthread_callevery_block_size"{print $1}')
 csize=$("$OBJDUMP" -s -j .data --start-address=0x$addr --stop-address=$(printf '0x%x' $((0x$addr+4))) "$ELF" |
-  awk 'NR>4&&NF>=2{w=$2; print strtonum("0x" substr(w,7,2) substr(w,5,2) substr(w,3,2) substr(w,1,2)); exit}')
+  awk 'NR>4&&NF>=2{w=$2; print substr(w,7,2) substr(w,5,2) substr(w,3,2) substr(w,1,2); exit}')
+csize=${csize:+$((16#$csize))}
 [ "$csize" = "$want" ] || { echo "WRONG: __pthread_callevery_block_size is '$csize', not $want" >&2; exit 1; }
 case $size in
   $want) echo "OK: UnixLib claims the $want-byte pthread ticker block, and the C side agrees";;

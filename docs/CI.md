@@ -10,7 +10,7 @@ build RISC OS programs on any machine that runs Docker, and on GitHub.
 From your project's directory:
 
 ```sh
-docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.1 make check all
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.2 make check all
 ```
 
 - Your project is at `/src`, the working directory. riscos-crossdev is at
@@ -21,7 +21,7 @@ docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.1 make check 
   `-DCMAKE_TOOLCHAIN_FILE=$RCD_DIR/cmake/riscos.cmake`.
 - **Files you build are owned by root** unless you run as yourself:
   `docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/src ...`
-- **For a shell:** `docker run --rm -it -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.1 bash`.
+- **For a shell:** `docker run --rm -it -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.8.2 bash`.
 - The image is for x86-64. On an ARM Mac or ARM Linux machine Docker runs it
   under emulation: it works, but slowly.
 
@@ -38,19 +38,27 @@ repositories your project is built with:
 
 ```
 # NAME TAG: repositories at github.com/adyoull, at a release tag
-riscos-crossdev v1.8.1
+riscos-crossdev v1.8.2
 riscos-mesa v20.3.5-16
 riscos-ffmpeg v5.1.10-riscos22
 ```
 
 The `riscos-crossdev` line also chooses the container image
-(`ghcr.io/adyoull/riscos-crossdev:1.8.1`). For a repository of another
+(`ghcr.io/adyoull/riscos-crossdev:1.8.2`). For a repository of another
 owner, write `OWNER/NAME`.
 
 1. **`ci/riscos-build.yml`** builds your project in the image on every push
    and pull request, and keeps what it makes (a zip, say) as a download on
    the run's page. Set `BUILD` to your build and test command (default
    `make check all`) and `ARTIFACTS` to what it makes.
+   - **`PACKAGES`:** Ubuntu packages your build needs that the image
+     hasn't, such as `"python3-pil shared-mime-info"`. They're installed
+     before the build. Set the same in both workflows.
+   - The image has what the kit itself uses, and what several ports share
+     (meson, g++ for ARM Linux; `docker/Dockerfile` lists it all). A
+     package only one port needs goes in that port's `PACKAGES`, so the
+     image doesn't grow with every port. If several ports come to need
+     one, ask for it to be added to the image.
 2. **`ci/riscos-deps-update.yml`** checks every day whether any of those
    repositories has a newer release. When one has, it moves the pin, builds
    your project with it, and opens a pull request listing what changed and

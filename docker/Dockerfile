@@ -18,6 +18,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 # GCCSDK's builds (UnixLib's among them) regenerate configure scripts with
 # autoconf 2.69 and automake 1.11. gcc-13-multilib, not gcc-multilib: on
 # Ubuntu 24.04 gcc-multilib conflicts with gcc-arm-linux-gnueabihf.
+# And what several ports' builds share: meson and its Python modules (GLib,
+# GTK, Mesa, dav1d), and g++ for ARM Linux (C++ code tested under QEMU).
+# A package only one port needs goes in that port's PACKAGES (ci/).
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       build-essential gcc-13-multilib gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
@@ -25,6 +28,7 @@ RUN apt-get update \
       cmake pkg-config libglib2.0-0t64 libcairo2-dev \
       autogen autoconf2.69 autoconf2.64 automake1.11 automake libtool libtool-bin texinfo \
       gperf flex bison m4 ninja-build libglib2.0-dev \
+      meson python3-packaging python3-mako g++-arm-linux-gnueabihf \
  && pip3 install --no-cache-dir --break-system-packages unicorn \
  && rm -rf /var/lib/apt/lists/*
 

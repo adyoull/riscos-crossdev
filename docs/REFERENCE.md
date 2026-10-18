@@ -134,6 +134,7 @@ Monday and opens a pull request when a port's fakes have changed.
 | Command or file | What |
 |---|---|
 | `toolchain/install-prebuilt.sh [TARBALL]` | `make prebuilt` |
+| `toolchain/relocate.sh [--check] [DIR]` | Point the toolchain's `.la` files at where it is (run by `make prebuilt`; run it after moving a toolchain). `--check`: say if any names a file that isn't there |
 | `toolchain/fetch.sh`, `toolchain/build.sh all` | `make toolchain`: fetch the sources in `SOURCES` (sha256-checked), build |
 | `toolchain/package.sh VERSION` | `make dist` |
 | `toolchain/SOURCES`, `toolchain/PREBUILT` | What the toolchain is built from; which tarball this release uses |
