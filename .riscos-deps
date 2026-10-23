@@ -2,5 +2,5 @@
 # github.com/adyoull). .github/workflows/update-deps.yml checks them daily
 # and opens a pull request when one has a newer release;
 # toolchain/deps-hook.sh updates devkit/DEVKIT or toolchain/SOURCES to match.
-riscos-mesa v20.3.5-16
+riscos-mesa v20.3.5-17
 riscos-unixlib v5.0.3.3
