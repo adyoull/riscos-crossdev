@@ -19,8 +19,10 @@ sudo apt-get install autogen autoconf2.69 autoconf2.64 automake1.11 automake \
 sudo apt-get install cmake libcairo2-dev
 pip install unicorn          # or: pip install --user unicorn
 # optional: what several ports' builds use (meson builds such as GLib, GTK
-# and Mesa; C++ code tested under QEMU). The container image has these too:
-sudo apt-get install meson python3-packaging python3-mako g++-arm-linux-gnueabihf
+# and Mesa; C++ code tested under QEMU or 32-bit; sprites from PNG; host
+# builds with SDL2). The container image has these too:
+sudo apt-get install meson python3-packaging python3-mako g++-arm-linux-gnueabihf \
+    g++-13-multilib python3-pil libsdl2-dev
 ```
 
 What each is for:
@@ -29,6 +31,11 @@ What each is for:
   `int` can hold a pointer, as on RISC OS. Not `gcc-multilib`: on Ubuntu
   24.04 that conflicts with `gcc-arm-linux-gnueabihf`, and apt either
   refuses or removes the ARM compiler.
+  - gcc-multilib would also have linked `/usr/include/asm`, without which a
+    32-bit build that includes `<errno.h>` fails ("asm/errno.h: No such
+    file"). `fake/fake.mk` works round it; for your own `-m32` builds, add
+    the link: `sudo ln -s x86_64-linux-gnu/asm /usr/include/asm` (the
+    container image has it).
 - `gcc-arm-linux-gnueabihf`, `libc6-dev-armhf-cross`: your portable code
   built for ARM Linux, to run under QEMU.
 - `libglib2.0-0` (installed with most desktops; `libglib2.0-dev` pulls it
@@ -39,10 +46,10 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.8.2 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.8.3 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
-1.5 to 1.8.2 use 1.4's.
+1.5 to 1.8.3 use 1.4's.
 
 **Prebuilt** (a few minutes):
 
@@ -119,7 +126,7 @@ no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.8.2: **20.3.5-16**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.8.3: **20.3.5-17**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -129,7 +136,7 @@ make check-devkit    # its libraries are VFPv3, and its six examples build
 ```
 
 `make check` runs `check-devkit` too once a devkit is installed. If you
-already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-16.tgz`.
+already have the tarball: `devkit/install.sh path/to/riscos-mesa-devkit-20.3.5-17.tgz`.
 Set `RISCOS_DEVKIT` to keep it somewhere else; a devkit already there is
 moved to `$RISCOS_DEVKIT.old`.
 

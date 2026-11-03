@@ -1,5 +1,32 @@
 # Changes
 
+## 1.8.3
+
+- **The riscos-mesa devkit 20.3.5-17** (was 20.3.5-16), from the daily
+  dependency update (pull request #6). Ports that pin 17 now use the
+  image's devkit instead of downloading it.
+- **`-ldl` links:** `make prebuilt` and `make toolchain` install `libdl.a`,
+  a stub (`toolchain/libdl/`). `dlopen` and `dlsym` fail and `dlerror`
+  says why: RISC OS programs are static, so nothing can be loaded at run
+  time. Builds that link `-ldl` (CMake's `CMAKE_DL_LIBS`, many configure
+  scripts) failed with "cannot find -ldl". From riscos-openttd. **With a
+  toolchain installed by 1.8.2 or earlier, run `toolchain/libdl/install.sh`
+  once.**
+- **The image has more of what several ports share:** python3-pil (riscos-gtk,
+  fheroes2, YSFlight), libsdl2-dev (Julius, VCMI) and g++-13-multilib
+  (32-bit C++ tests against the Fake RISC OS). Ports listing them in
+  `PACKAGES` can drop them.
+- **Fixed: 32-bit builds that include `<errno.h>` failed** ("asm/errno.h:
+  No such file"): gcc-13-multilib, unlike gcc-multilib, doesn't link
+  `/usr/include/asm`. `fake/fake.mk` now finds it in the 64-bit headers,
+  the image has the link, and `docs/SETUP.md` gives it for your own
+  machine. The Fake RISC OS's self-test includes `<errno.h>`, so
+  `make check` checks it.
+- `docs/CI.md`: ThreadSanitizer can't run in the image on GitHub's runners
+  (from riscos-vcmi).
+- The ports' latest fakes (pull requests #4, #7 and #8).
+- Nothing else changes: the toolchain tarball is 1.4's.
+
 ## 1.8.2
 
 - **The container image has what several ports' builds share:** meson,

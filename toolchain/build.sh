@@ -187,6 +187,7 @@ fi
 
 if [ "$WHAT" = all ]; then
   build_elf2aif
+  "$HERE/libdl/install.sh" "$RISCOS_TOOLCHAIN"
   log "smoke test"
   printf '#include <stdio.h>\nint main(void){puts("hi");return 0;}\n' > hello.c
   printf '#include <iostream>\nint main(){std::cout<<"hi"<<std::endl;}\n' > hello.cc

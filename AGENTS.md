@@ -68,6 +68,7 @@ on RISC OS) first. Start from the closest example in `examples/`: `hello`
     a SWI nobody faked: fake it in the test.
 - **Facts that often surprise:**
   - RISC OS has no `fork` and no `dlopen`, and multitasks cooperatively.
+    `-ldl` links, to a stub whose `dlopen` always fails.
   - UnixLib maps Unix paths to RISC OS ones: `name.ext` is stored as
     `name/ext`.
 - **Check SWIs, block layouts and Wimp messages against the PRMs.** Don't

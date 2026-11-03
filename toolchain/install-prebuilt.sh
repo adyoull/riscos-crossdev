@@ -26,6 +26,7 @@ fi
 mkdir -p "$RISCOS_TOOLCHAIN"
 tar xJf "$TARBALL" -C "$RISCOS_TOOLCHAIN" --strip-components=1
 "$HERE/relocate.sh" "$RISCOS_TOOLCHAIN"
+"$HERE/libdl/install.sh" "$RISCOS_TOOLCHAIN"
 echo "installed in $RISCOS_TOOLCHAIN:"
 head -1 "$RISCOS_TOOLCHAIN/BUILDINFO.txt"
 "$RISCOS_TOOLCHAIN/bin/arm-riscos-gnueabihf-gcc" --version | head -1

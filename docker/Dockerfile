@@ -17,9 +17,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 # docs/SETUP.md's packages, including those for building from source:
 # GCCSDK's builds (UnixLib's among them) regenerate configure scripts with
 # autoconf 2.69 and automake 1.11. gcc-13-multilib, not gcc-multilib: on
-# Ubuntu 24.04 gcc-multilib conflicts with gcc-arm-linux-gnueabihf.
+# Ubuntu 24.04 gcc-multilib conflicts with gcc-arm-linux-gnueabihf, so
+# /usr/include/asm, which gcc-multilib links, is linked below (32-bit
+# builds including <errno.h> need it).
 # And what several ports' builds share: meson and its Python modules (GLib,
-# GTK, Mesa, dav1d), and g++ for ARM Linux (C++ code tested under QEMU).
+# GTK, Mesa, dav1d), g++ for ARM Linux (C++ code tested under QEMU) and
+# 32-bit g++ (C++ tests against the Fake RISC OS), Pillow (sprites and icons
+# from PNG) and SDL2's headers (host builds of the ports' screen code).
 # A package only one port needs goes in that port's PACKAGES (ci/).
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -28,8 +32,10 @@ RUN apt-get update \
       cmake pkg-config libglib2.0-0t64 libcairo2-dev \
       autogen autoconf2.69 autoconf2.64 automake1.11 automake libtool libtool-bin texinfo \
       gperf flex bison m4 ninja-build libglib2.0-dev \
-      meson python3-packaging python3-mako g++-arm-linux-gnueabihf \
+      meson python3-packaging python3-mako g++-arm-linux-gnueabihf g++-13-multilib \
+      python3-pil libsdl2-dev \
  && pip3 install --no-cache-dir --break-system-packages unicorn \
+ && { [ -e /usr/include/asm ] || ln -s x86_64-linux-gnu/asm /usr/include/asm; } \
  && rm -rf /var/lib/apt/lists/*
 
 COPY . /opt/riscos-crossdev

@@ -2,6 +2,7 @@
    way UnixLib's _swix does (inputs, outputs in order, _OUT(_FLAGS) last),
    _swi returns what _RETURN names, errors leave outputs alone, and the SWI
    numbers come from UnixLib's swis.h. Run by make check. */
+#include <errno.h>   /* -m32 needs <asm/errno.h>: see fake.mk */
 #include <stdio.h>
 #include <string.h>
 #include "fake.h"
