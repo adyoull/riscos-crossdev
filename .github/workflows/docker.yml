@@ -41,6 +41,17 @@ jobs:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
+      # A release with its own toolchain tarball pushes its tag before the
+      # tarball is uploaded to the release: wait for it (up to 30 minutes).
+      - name: Wait for the toolchain tarball
+        run: |
+          url=$(grep -v '^#' toolchain/PREBUILT | awk 'NF==3 {print $3}')
+          for i in $(seq 60); do
+            curl -fsIL -o /dev/null "$url" && { echo "there: $url"; exit 0; }
+            echo "not there yet: $url"; sleep 30
+          done
+          echo "no $url after 30 minutes" >&2; exit 1
+
       - uses: docker/setup-buildx-action@v4
 
       - name: Build

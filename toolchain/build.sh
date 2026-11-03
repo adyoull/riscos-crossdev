@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.3.3, the PThreadTicker module and elf2aif.
+# binutils 2.30, UnixLib 5.0.3.5, the PThreadTicker module and elf2aif.
 # Static linking only: there are no shared target libraries, and links are
 # static by default.
 #
@@ -38,7 +38,7 @@ log() { echo "=== $* ($(date +%H:%M))"; }
 
 unpack_gccsdk() {
   rm -rf gccsdk; tar xf "$DL"/gccsdk-64c6f81.tar.gz; mv riscos-gccsdk-64c6f81* gccsdk
-  # UnixLib 5.0.3.3 (riscos-unixlib, an unofficial fork of GCCSDK's
+  # UnixLib 5.0.3.5 (riscos-unixlib, an unofficial fork of GCCSDK's
   # UnixLib): real wide-character functions, a high resolution
   # monotonic clock, nanosleep accuracy, no mmap for large blocks, sched
   # priorities, /dev/dsp and /dev/midi, the pthread ticker fix (its
@@ -50,7 +50,11 @@ unpack_gccsdk() {
   # (PThreadTicker 0.03, a 640-byte pthread RMA block); in 5.0.3.2: LLONG_MIN
   # is a long long, getservby*_r, eventfd with threads; in 5.0.3.3: the
   # 2026-10-04 audit fixes (waits inside read/write and stdio, fork in
-  # threaded programs, the services database, exit codes, the heap).
+  # threaded programs, the services database, exit codes, the heap); in
+  # 5.0.3.4: threads and signals on RISC OS for Linux, sub-second interval
+  # timers, POSIX group/password lookups, thread scheduling attributes,
+  # strnlen & co. without _GNU_SOURCE, file names starting "///"; in
+  # 5.0.3.5: rename() of a file whose type isn't the one its extension gives.
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
   # Static only (riscos-crossdev 1.3). RISC OS programs are linked
   # statically; GCCSDK's shared libraries need !SharedLibs' ELF loader. A

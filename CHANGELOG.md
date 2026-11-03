@@ -1,5 +1,30 @@
 # Changes
 
+## 1.9
+
+- **A new toolchain, 1.9, with UnixLib 5.0.3.5** (was 5.0.3.3), from
+  riscos-unixlib. Its changes since 5.0.3.3:
+  - threads and signals work on RISC OS for Linux;
+  - sub-second interval timers repeat;
+  - `getgrgid_r` and the other group and password lookups follow POSIX;
+  - file names starting with several slashes (`///RAM::...`, from
+    `file:///` URIs) work;
+  - `pthread_attr_setscope` and the other scheduling attributes exist;
+  - `strnlen`, `strndup`, `stpcpy` and `stpncpy` are declared without
+    `_GNU_SOURCE`;
+  - `rename()` works on a file whose type isn't the one its extension
+    gives.
+  No struct, argument or header changes beyond those declarations: relink
+  to pick them up. PThreadTicker is still 0.03. The tarball is
+  `riscos-crossdev-toolchain-1.9-x86_64-linux.tar.xz`, attached to the v1.9
+  release; GCC, binutils and the rest are as in 1.4. It has the libdl stub
+  installed.
+- **`.github/workflows/docker.yml` waits for the toolchain tarball** when a
+  release brings its own, since the tag is pushed before the tarball is
+  uploaded.
+- `docs/SETUP.md`: building the toolchain from source needs meson
+  (Debian's QEMU source has no bundled copy).
+
 ## 1.8.3
 
 - **The riscos-mesa devkit 20.3.5-17** (was 20.3.5-16), from the daily
