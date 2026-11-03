@@ -47,6 +47,9 @@ expect 0 "toolchain: the .la files name where it is (libtool links of C++ work)"
 printf '#include <dlfcn.h>\n#include <stdio.h>\nint main(void){void *h=dlopen("x.so",RTLD_NOW); if(!h) puts(dlerror()); return h!=0;}\n' > "$OUT/dl.c"
 expect 0 "toolchain: a program linking -ldl links (the libdl stub), and passes every check" \
   sh -c "$CC -mfpu=vfpv3 -fstack-clash-protection -static -o '$OUT/dl' '$OUT/dl.c' -ldl && '$HERE/check-all.sh' '$OUT/dl'"
+printf '#include <semaphore.h>\n#include <time.h>\nint main(void){sem_t s; struct timespec t={0,0}; sem_init(&s,0,1); return sem_timedwait(&s,&t);}\n' > "$OUT/sem.c"
+expect 0 "UnixLib 5.0.3.6: sem_timedwait is declared and links" \
+  sh -c "$CC -mfpu=vfpv3 -fstack-clash-protection -static -Wall -Werror -o '$OUT/sem' '$OUT/sem.c' -lpthread"
 expect 0 "PThreadTicker 0.03 is in the toolchain" \
   sh -c "strings -a '$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa' | grep -q 'PThreadTicker.0\.03'"
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"

@@ -11,6 +11,7 @@
   Only `sem.o`, `<semaphore.h>` and the generated `<unixlib/stubs.h>`
   change. Configure scripts (SDL's among them) now find `sem_timedwait`, so
   reconfigure libraries built with 1.9 or earlier that use semaphores.
+  `make check` checks that `sem_timedwait` is declared and links.
   PThreadTicker is still 0.03. The tarball is
   `riscos-crossdev-toolchain-1.10-x86_64-linux.tar.xz`, attached to the
   v1.10 release; everything else is as in 1.9.
