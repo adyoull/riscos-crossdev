@@ -46,10 +46,11 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.9 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.10 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
-1.5 to 1.8.3 use 1.4's; 1.9 has its own (UnixLib 5.0.3.5).
+1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5) and 1.10 (UnixLib 5.0.3.6) have
+their own.
 
 **Prebuilt** (a few minutes):
 
@@ -59,7 +60,7 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.9-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.10-x86_64-linux.tar.xz`.
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
 
@@ -91,7 +92,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.9
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.10
 make prebuilt       # installs there
 ```
 
@@ -126,7 +127,7 @@ no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.9: **20.3.5-17**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.10: **20.3.5-17**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh

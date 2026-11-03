@@ -1,5 +1,21 @@
 # Changes
 
+## 1.10
+
+- **A new toolchain, 1.10, with UnixLib 5.0.3.6** (was 5.0.3.5), from
+  riscos-unixlib. Semaphores work:
+  - `sem_timedwait` exists (it failed with ENOSYS) and is declared in
+    `<semaphore.h>`;
+  - `sem_wait` blocks, rather than polling and leaking memory;
+  - `sem_post` is safe in a signal handler.
+  Only `sem.o`, `<semaphore.h>` and the generated `<unixlib/stubs.h>`
+  change. Configure scripts (SDL's among them) now find `sem_timedwait`, so
+  reconfigure libraries built with 1.9 or earlier that use semaphores.
+  PThreadTicker is still 0.03. The tarball is
+  `riscos-crossdev-toolchain-1.10-x86_64-linux.tar.xz`, attached to the
+  v1.10 release; everything else is as in 1.9.
+- The ports' latest fakes (pull request #9).
+
 ## 1.9
 
 - **A new toolchain, 1.9, with UnixLib 5.0.3.5** (was 5.0.3.3), from
