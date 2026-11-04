@@ -1,4 +1,4 @@
 # The riscos-mesa devkit this version of riscos-crossdev is tested with:
 # file, sha256, URL (a riscos-mesa GitHub release asset). devkit/install.sh
 # checks it. OpenGL (OSMesa), EGL, GLES, GLU, SDL2, freeglut, OpenAL, zlib.
-riscos-mesa-devkit-20.3.5-17.tgz e0bea16a604265cde8d360055d2cb57dc38f4c7442954e599c393acd4c1395b8 https://github.com/adyoull/riscos-mesa/releases/download/v20.3.5-17/riscos-mesa-devkit-20.3.5-17.tgz
+riscos-mesa-devkit-20.3.5-18.tgz 8537729d910135c3dabca53ecf755f051ec22a668b48d86836e8f32c8a88b407 https://github.com/adyoull/riscos-mesa/releases/download/v20.3.5-18/riscos-mesa-devkit-20.3.5-18.tgz
