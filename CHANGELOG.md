@@ -1,5 +1,18 @@
 # Changes
 
+## 1.11.1
+
+Documentation only; the toolchain is 1.11's.
+
+- Every document brought up to 1.11 and mixed programs: USING.md (the
+  link settings, AIF and the new example), RISCOS-RULES.md section 7,
+  SETUP.md, TESTING.md (the new checks), PI-TESTING.md (what a mixed
+  program needs; PThreadTicker 0.04), REFERENCE.md, AGENTS.md and the
+  README (UnixLib 5.0.3.7; four examples).
+- MIXED.md: the Pi result (mixed Geany and L3afpad alongside Iris, on
+  RISC OS 5), and CMake under "Not done yet" (`riscos.cmake` links
+  `-static`).
+
 ## 1.11
 
 - **A new toolchain, 1.11, with UnixLib 5.0.3.7** (was 5.0.3.6), from

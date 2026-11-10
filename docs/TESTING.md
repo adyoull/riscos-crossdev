@@ -31,7 +31,9 @@ Run on every build. `examples/hello/Makefile` runs them before it will zip.
 | Command | Input | Fails when |
 |---|---|---|
 | `checks/check-all.sh PROGRAM.elf [LIB.a...]` | the linked, unstripped ELF | any of the next three fails |
-| `checks/check-static.sh PROGRAM.elf...` | | the program is dynamically linked (needs a shared library) |
+| `checks/check-static.sh PROGRAM.elf...` | | the program is dynamically linked (needs a shared library), unless it's a correct mixed program (docs/MIXED.md) |
+| `checks/check-shared-lib.sh LIBRARY.so...` | a mixed program's libraries | a library isn't PIC, has its own UnixLib, or needs a shared one |
+| `checks/check-mixed-package.sh PROGRAM LIBDIR...` | a mixed app, as packaged | a library it needs is missing, wrong, or needs a name nothing defines |
 | `checks/check-stack-probes.py PROGRAM.elf` | | a frame of 4 KB or more doesn't probe |
 | `checks/check-fpu.sh FILE...` | programs, `.a`, `.o` | a VFPv4-only instruction is used |
 | `checks/check-unixlib.sh PROGRAM.elf` | | UnixLib's ticker block sizes disagree |

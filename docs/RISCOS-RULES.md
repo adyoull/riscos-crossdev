@@ -80,7 +80,8 @@ program could crash other tasks.
 - **Do:** keep interrupt-time code and its data in a module or the RMA.
   Ship PThreadTicker with threaded programs and load it from `!Run`.
   Use the toolchain's copy (`toolchain/env/riscos/PThrTicker,ffa`, version
-  0.03): UnixLib 5.0.3.1 and later only use 0.03, and runs its own copy otherwise.
+  0.04): UnixLib 5.0.3.1 and later only use 0.03 or later, and run their
+  own copy otherwise.
   UnixLib 5.0.3.1 also keeps threads running in Wimp programs that poll
   more often than every 2 cs, which earlier versions didn't.
 - **Catches it:** nothing on Linux. A Pi, with other tasks running (see
@@ -96,13 +97,19 @@ use `Wimp_StartTask`.
 ## 7. Static programs, Absolute files and the WimpSlot
 
 Link statically and convert programs with `elf2aif -e` (after stripping),
-so they don't need !SharedLibs' ELF loader. A dynamically linked program
-needs `libunixlib.so` at run time and doesn't contain the `libunixlib.a`
-you built against. From riscos-crossdev 1.3 the toolchain has no shared
+so they don't need !SharedLibs' ELF loader. A fully shared program needs
+`libunixlib.so` at run time and doesn't contain the `libunixlib.a` you
+built against. From riscos-crossdev 1.3 the toolchain has no shared
 libraries and links statically even without `-static` (up to 1.2 a link
 without `-static` silently used `libunixlib.so`, and libtool followed
 `libm.la` to `libm.so`). `checks/check-static.sh` (part of `check-all.sh`)
-fails on a dynamically linked program. The toolchain's `elf2aif` has the fix for images
+fails on a dynamically linked program.
+
+The one exception, from 1.11, is a *mixed* program (`-rdynamic`;
+docs/MIXED.md): UnixLib is still linked into it, but its other libraries
+are shared. It stays an ELF file, run by !SharedLibs, and
+`check-static.sh` accepts it only if it needs no shared UnixLib,
+libstdc++ or libgcc. The toolchain's `elf2aif` has the fix for images
 over 32 MB (the stock one wrote a broken branch). Give `!Run` a `WimpSlot`
 big enough for the program: UnixLib puts a large heap in a dynamic area,
 so the slot mostly has to hold the image itself.

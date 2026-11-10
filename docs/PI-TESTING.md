@@ -22,12 +22,19 @@ back into a filetype.
   UnixLib program needs both; `!Run` should `RMEnsure` them (see
   `examples/hello/app/!Run,feb`).
 - Threaded programs: the PThreadTicker module. Programs built with this
-  toolchain (UnixLib 5.0.3.1 and later) use version 0.03, which is in
-  `toolchain/env/riscos/PThrTicker,ffa` with its ReadMe and Licence (the
-  same module as PThreadTicker-0.03.zip on the riscos-unixlib v5.0.3.6
-  release, and as the one in the riscos-mesa devkit 20.3.5-11 and later). Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe
-  shows. Without it, or with an older version loaded, UnixLib runs its own
-  copy, which also works.
+  toolchain (UnixLib 5.0.3.1 and later) use version 0.03 or later. The
+  toolchain has 0.04 in `toolchain/env/riscos/PThrTicker,ffa`, with its
+  ReadMe and Licence (the same module as PThreadTicker-0.04.zip on the
+  riscos-unixlib v5.0.3.7 release; 0.04 only changes its error number).
+  Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe shows.
+  Without it, or with an older version loaded, UnixLib runs its own copy,
+  which also works.
+- Mixed programs (docs/MIXED.md) also need a !SharedLibs with
+  `ld-riscos/so/2` (GCCSDK 8 or later; Iris ships one) in
+  `!Boot.Resources`, and any library pack they use. riscos.info's
+  SharedLibs 4.0 has only `ld-riscos/so/1` and won't run them. Mixed
+  programs have run on a Pi 4 under RISC OS 5: riscos-gtk's Geany and
+  L3afpad sharing one `!GTKLibs`, alongside Iris.
 - Programs built with the riscos-mesa devkit: whatever its README lists for
   the libraries you use.
 

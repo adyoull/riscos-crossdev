@@ -15,9 +15,10 @@ share one copy of its code in memory.
 - on RISC OS on Linux (in QEMU, and on the owner's own machine) with
   `MixTest`: C and C++, threads, signals, and exceptions between a
   program and a library;
-- on RISC OS 5 directly, on a Raspberry Pi, with riscos-gtk's mixed Geany
-  and L3afpad. Both used one copy of GTK's 26 libraries (20 MB), the same
-  as Geany alone.
+- on RISC OS 5 directly, on a Raspberry Pi 4, with riscos-gtk's mixed
+  Geany and L3afpad. Both used one copy of GTK's 26 libraries (20 MB), the
+  same as Geany alone, and ran alongside Iris, which uses !SharedLibs
+  too.
 
 ## Building
 
@@ -219,6 +220,8 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
 
 ## Not done yet
 
+- **CMake:** `cmake/riscos.cmake` links every program `-static`, so mixed
+  programs need Make (or configure) for now.
 - **`-Wl,--as-needed` for the program** isn't in `RISCOS_MIXED_LDFLAGS`. A
   program then names only the libraries it calls itself, and the loader
   finds the rest through them. It hasn't been tried with SOManager, and

@@ -46,11 +46,11 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.11 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.11.1 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
 1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5), 1.10 (UnixLib 5.0.3.6) and
-1.11 (UnixLib 5.0.3.7) have their own.
+1.11 (UnixLib 5.0.3.7) have their own; 1.11.1 uses 1.11's.
 
 **Prebuilt** (a few minutes):
 
@@ -80,7 +80,7 @@ Either way you get, in `toolchain/env/bin`:
 
 | Program | What |
 |---|---|
-| `arm-riscos-gnueabihf-gcc`, `-g++`, `-as`, `-ld`, `-objdump`, ... | The cross toolchain. Static only: there are no shared target libraries, and links are static without `-static` too |
+| `arm-riscos-gnueabihf-gcc`, `-g++`, `-as`, `-ld`, `-objdump`, ... | The cross toolchain. There are no shared target libraries, and links are static without `-static` too, except `-rdynamic` links: mixed programs, docs/MIXED.md |
 | `elf2aif` | ELF to Absolute (AIF). Has the fix for images over 32 MB |
 | `qemu-arm-aligntrap` | QEMU user mode that traps unaligned accesses (`qemu/`) |
 
@@ -120,14 +120,16 @@ cmake -B build -DCMAKE_TOOLCHAIN_FILE=$HOME/riscos-crossdev/cmake/riscos.cmake
 
 Configure tests and libtool link the static libraries: the toolchain has
 no `libunixlib.so`, `libstdc++.so` or `libm.so` to pick up, and adds
-`-static` to links that don't say `-shared`, `-r` or `-mmodule` (keeping
-`-static` in `LDFLAGS` does no harm).
+`-static` to links that don't say `-shared`, `-r`, `-mmodule` or
+`-rdynamic` (keeping `-static` in `LDFLAGS` does no harm). A configure
+script that adds `-rdynamic` itself makes a mixed program:
+`check-static.sh` tells you, and docs/MIXED.md explains.
 
 ## 4. Libraries: the riscos-mesa devkit
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.11: **20.3.5-18**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.11 and 1.11.1: **20.3.5-18**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh
@@ -151,10 +153,11 @@ $(RO_CC) $(RISCOS_CFLAGS) $(DEVKIT_CFLAGS) -o prog prog.c \
 The devkit's `README.md` (in `devkit/env`) lists the libraries each part
 needs and in what order, explains every flag, and has six small example
 programs. Threaded programs (OpenAL, SDL sound, and anything using
-pthreads) should ship the PThreadTicker module 0.03, which UnixLib 5.0.3.1
-and later use: `toolchain/env/riscos/PThrTicker,ffa`, or the same module in
-the devkit's `riscos/` folder (devkit 20.3.5-11 and later; earlier devkits have 0.01,
-which programs built with this toolchain don't use).
+pthreads) should ship the PThreadTicker module 0.03 or later, which
+UnixLib 5.0.3.1 and later use: `toolchain/env/riscos/PThrTicker,ffa` (0.04),
+or the module in the devkit's `riscos/` folder (devkit 20.3.5-11 and later;
+earlier devkits have 0.01, which programs built with this toolchain don't
+use).
 
 ## 5. Updating
 

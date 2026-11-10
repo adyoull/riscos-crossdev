@@ -23,13 +23,13 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.11 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.11.1 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
 make devkit        # optional: the riscos-mesa devkit (OpenGL, EGL, SDL2, OpenAL)
 make check         # the self-tests, and every example built and tested
-make examples      # three example programs, zipped and ready for the Pi
+make examples      # four example programs, zipped and ready for the Pi
 ```
 
 Use a tagged release, not `main`: each tag names exactly one toolchain
@@ -39,7 +39,7 @@ Or, on any machine with Docker (no setup at all), from your project's
 directory:
 
 ```sh
-docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.11 make check all
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.11.1 make check all
 ```
 
 ## Documentation
@@ -91,7 +91,7 @@ The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
 | `docs/` | Setup, testing, RISC OS rules, testing on a Pi |
 
 The large pieces are linked, not copied: UnixLib comes from
-[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.6; an unofficial fork of GCCSDK's UnixLib)
+[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.7; an unofficial fork of GCCSDK's UnixLib)
 and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
 and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
 (release 20.3.5-17, `make devkit`; see docs/SETUP.md).

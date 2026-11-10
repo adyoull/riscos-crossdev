@@ -37,7 +37,8 @@ make check         # must end with "== all checks passed"
 
 Read `docs/USING.md` (the guide) and `docs/RISCOS-RULES.md` (what aborts
 on RISC OS) first. Start from the closest example in `examples/`: `hello`
-(command line), `wimp` (desktop) or `cmake`.
+(command line), `wimp` (desktop), `cmake`, or `mixed` (a program sharing
+its libraries; `docs/MIXED.md`).
 
 - **Build:**
   - Make: `include $(RCD_DIR)/riscos.mk`, then
@@ -85,7 +86,7 @@ on RISC OS) first. Start from the closest example in `examples/`: `hello`
 
 - `make check` must pass before a commit. It runs every self-test (each
   check is shown catching its fault), the Fake RISC OS and the ports' fakes,
-  QEMU, all three examples, Unicorn, and the devkit's examples.
+  QEMU, all four examples, Unicorn, and the devkit's examples.
 - **Never edit anything in `fake/ports/`.** These are copies of the ports'
   own fakes, checked by sha256 against `fake/fake_origin.md`.
   - A fix goes to the port it came from.

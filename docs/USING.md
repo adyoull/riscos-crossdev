@@ -52,6 +52,7 @@ Copy the example closest to what you're making:
 | [`examples/hello`](../examples/hello) | A command-line program that runs in a task window | A Makefile with every step; a Fake RISC OS test of its SWI calls; a QEMU test of its portable part |
 | [`examples/wimp`](../examples/wimp) | A desktop program: icon bar icon, window, menu | The Wimp poll loop kept apart from the event handling, so the handling can be tested; every Wimp SWI it uses faked in the test; `!Sprites` from PNGs |
 | [`examples/cmake`](../examples/cmake) | A library and a program, built with CMake | One `CMakeLists.txt` built for RISC OS, for ARM Linux with ctest under QEMU, and for the host; a library from the devkit found by `find_package` |
+| [`examples/mixed`](../examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nostdlib`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` ([MIXED.md](MIXED.md)) |
 
 The devkit has six more, for OpenGL, OpenGL ES, SDL2 and OpenAL, in
 `devkit/env/examples` (see its `README.md`); `make check-devkit` builds them
@@ -78,8 +79,8 @@ project gets the same compiler and libraries. Three ways, best first:
 
   ```sh
   git submodule add https://github.com/adyoull/riscos-crossdev crossdev
-  git -C crossdev checkout v1.11
-  git add crossdev && git commit -m "riscos-crossdev 1.11"
+  git -C crossdev checkout v1.11.1
+  git add crossdev && git commit -m "riscos-crossdev 1.11.1"
   ```
 
   The tag is recorded in your repository, and `RCD_DIR := crossdev` is
@@ -89,9 +90,9 @@ project gets the same compiler and libraries. Three ways, best first:
   (`RCD_DIR=~/riscos-crossdev`) and make your build fail on the wrong
   version: `git -C $(RCD_DIR) describe --tags` must print the tag you
   expect.
-- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.11` has the
+- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.11.1` has the
   release installed, with `RCD_DIR` set: `docker run --rm -v "$PWD":/src
-  ghcr.io/adyoull/riscos-crossdev:1.11 make`. It's also how your port
+  ghcr.io/adyoull/riscos-crossdev:1.11.1 make`. It's also how your port
   builds on GitHub, with a pull request each time riscos-crossdev has a
   new release (CI.md).
 - **Only the toolchain.** If all you need is the compiler, unpack the
@@ -130,8 +131,10 @@ out/myprog: $(SRC) $(RO_CC) | riscos-toolchain-present
   aborting on RISC OS, and `-mfpu` decides which machines can run the
   program (vfpv3: every ARMv7 machine; `FPU=vfpv4` for Cortex-A7 and later
   only).
-- **`RISCOS_LDFLAGS`** is `-static`. Every program is static: there are no
-  RISC OS shared libraries here.
+- **`RISCOS_LDFLAGS`** is `-static`. Programs are static unless you make a
+  *mixed* one (`RISCOS_MIXED_LDFLAGS`: UnixLib linked in, other libraries
+  shared between programs; [MIXED.md](MIXED.md)). Start static: it needs
+  nothing but two modules on the user's machine.
 - **Make `$(RO_CC)` a prerequisite** of the program (and, as the examples
   do, `$(RISCOS_TOOLCHAIN)/$(RISCOS_HOST)/lib/libunixlib.a`). Then a new
   toolchain relinks it, instead of leaving a program built against the old
@@ -274,12 +277,14 @@ out/MyApp.zip: out/!MyApp/!RunImage,ff8 out/!MyApp/!Sprites,ff9
 ```
 
 - **Why AIF:** an ELF program needs the `!SharedLibs` ELF loader; an
-  Absolute file runs on any RISC OS 5 with just two modules.
+  Absolute file runs on any RISC OS 5 with just two modules. (A mixed
+  program stays ELF and does need !SharedLibs: [MIXED.md](MIXED.md),
+  "Packaging".)
 - **`!Run` must load those modules,** SharedUnixLibrary 1.16 or later and
   ARMEABISupport, with `RMEnsure` (copy the lines from
   `examples/wimp/app/!Run,feb`). Threaded programs also need the
   PThreadTicker module (`toolchain/env/riscos/PThrTicker,ffa`): ship it in
-  your app and `RMEnsure PThreadTicker 0.03` it the same way. Compile
+  your app (it's 0.04) and `RMEnsure PThreadTicker 0.03` it the same way. Compile
   and link with `-pthread` or `-lpthread`, as on Linux (both work from
   1.11; UnixLib itself has the threads).
 - **The WimpSlot** is the memory the program starts with. UnixLib puts a
