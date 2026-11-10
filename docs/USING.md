@@ -279,7 +279,9 @@ out/MyApp.zip: out/!MyApp/!RunImage,ff8 out/!MyApp/!Sprites,ff9
   ARMEABISupport, with `RMEnsure` (copy the lines from
   `examples/wimp/app/!Run,feb`). Threaded programs also need the
   PThreadTicker module (`toolchain/env/riscos/PThrTicker,ffa`): ship it in
-  your app and `RMEnsure PThreadTicker 0.03` it the same way.
+  your app and `RMEnsure PThreadTicker 0.03` it the same way. Compile
+  and link with `-pthread` or `-lpthread`, as on Linux (both work from
+  1.11; UnixLib itself has the threads).
 - **The WimpSlot** is the memory the program starts with. UnixLib puts a
   large heap in a dynamic area, so the slot mostly has to hold the program
   itself: `WimpSlot -min 1024K -max 1024K` is enough for a small one, and a

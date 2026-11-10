@@ -85,6 +85,20 @@ unpack_gccsdk() {
   # gnu-user.opt); declare it for RISC OS too.
   grep -qx rdynamic gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt ||
     printf '\nrdynamic\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
+  # -pthread (riscos-crossdev 1.11), as on Linux: defines _REENTRANT and
+  # links libpthread (UnixLib has the threads; libpthread.a is empty), so
+  # builds that pass it (meson, CMake's Threads, many configure scripts)
+  # work. The driver rejected it before.
+  grep -qx pthread gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt ||
+    printf '\npthread\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
+  sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{pthread:-D_REENTRANT}" \\|' \
+    gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
+  # (A space at the end of %{...} is dropped: it goes after the brace.)
+  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} -lunixlib }"|' \
+    gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
+  grep -q '%{pthread:-D_REENTRANT}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h &&
+    grep -q '%{pthread:-lpthread} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    { echo "couldn't add -pthread to GCCSDK's driver specs" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk
 H=$TC/gccsdk/autobuilder/develop/gcc

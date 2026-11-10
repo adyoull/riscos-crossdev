@@ -2,8 +2,12 @@
 
 ## 1.11-test2 (test build, branch `mixed-link-test`)
 
-The toolchain is 1.11-test1's; `make prebuilt` builds the new parts.
-
+- **`-pthread` works** (the driver rejected it): as on Linux, it defines
+  `_REENTRANT` and links `libpthread` (empty: UnixLib has the threads), so
+  meson, CMake's `Threads` and configure scripts that pass it work. The
+  toolchain is rebuilt for it; otherwise it's 1.11-test1's (UnixLib
+  5.0.3.7-rc4, PThreadTicker 0.04). Threaded programs still ship the
+  PThreadTicker module, static or mixed.
 - **One UnixLib in a mixed program, always** (docs/MIXED.md):
   - `crtmixed.o` stops the program before `main` if a library loaded a
     real shared UnixLib, libstdc++ or libgcc_s;

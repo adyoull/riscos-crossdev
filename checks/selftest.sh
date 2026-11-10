@@ -33,8 +33,8 @@ expect 2 "FPU: a stripped program is refused (its data would read as code)" \
   "$HERE/check-fpu.sh" "$OUT/probed.stripped"
 $CC -mfpu=vfpv3 -fstack-clash-protection -o "$OUT/nostatic" "$S/bigframe.c"
 expect 0 "static: a link without -static is static" "$HERE/check-static.sh" "$OUT/nostatic"
-expect 0 "static: the toolchain has no shared target libraries" \
-  sh -c "! find '$RISCOS_TOOLCHAIN/arm-riscos-gnueabihf/lib' '$RISCOS_TOOLCHAIN/lib/gcc/arm-riscos-gnueabihf' -path '*/plugin' -prune -o -name '*.so*' -print | grep -q ."
+expect 0 "static: the toolchain has no shared target libraries (beside the mixed stand-ins)" \
+  sh -c "! find '$RISCOS_TOOLCHAIN/arm-riscos-gnueabihf/lib' '$RISCOS_TOOLCHAIN/lib/gcc/arm-riscos-gnueabihf' \( -path '*/plugin' -o -path '*/mixed-stubs' \) -prune -o -name '*.so*' -print | grep -q ."
 $CC -mfpu=vfpv3 -fPIC -shared -nostdlib -o "$OUT/shared.so" "$S/fma.c"
 expect 1 "static: a shared object is reported" "$HERE/check-static.sh" "$OUT/shared.so"
 expect 0 "UnixLib: a linked program is consistent" "$HERE/check-unixlib.sh" "$OUT/probed"
@@ -50,6 +50,9 @@ expect 0 "toolchain: a program linking -ldl links (the libdl stub), and passes e
 printf '#include <semaphore.h>\n#include <time.h>\nint main(void){sem_t s; struct timespec t={0,0}; sem_init(&s,0,1); return sem_timedwait(&s,&t);}\n' > "$OUT/sem.c"
 expect 0 "UnixLib 5.0.3.6: sem_timedwait is declared and links" \
   sh -c "$CC -mfpu=vfpv3 -fstack-clash-protection -static -Wall -Werror -o '$OUT/sem' '$OUT/sem.c' -lpthread"
+printf '#ifndef _REENTRANT\n#error no _REENTRANT\n#endif\n#include <pthread.h>\nstatic void *f(void *a){return a;}\nint main(void){pthread_t t; pthread_create(&t,0,f,0); return pthread_join(t,0);}\n' > "$OUT/pth.c"
+expect 0 "toolchain 1.11: -pthread compiles and links, as on Linux" \
+  sh -c "$CC -mfpu=vfpv3 -fstack-clash-protection -pthread -o '$OUT/pth' '$OUT/pth.c' && '$HERE/check-all.sh' '$OUT/pth'"
 expect 0 "PThreadTicker 0.03 or later is in the toolchain" \
   sh -c "strings -a '$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa' | grep -qE 'PThreadTicker.0\.0[3-9]'"
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
