@@ -99,7 +99,7 @@ each one fakes is in `fake/ports/README.md`.
 ## SWI numbers, in `fake/swinames.h`
 
 <!-- swis -->
-Every SWI number in UnixLib's `swis.h` (riscos-unixlib, UnixLib, as installed in the toolchain): 982.
+Every SWI number in UnixLib's `swis.h` (riscos-unixlib, UnixLib 5.0.3.7, as installed in the toolchain): 982.
 
 The ports' `swis.h` copies define 170 SWI numbers between them (49 different SWIs). All of them are in UnixLib's, with the same numbers.
 
