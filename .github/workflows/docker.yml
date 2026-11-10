@@ -84,7 +84,8 @@ jobs:
           VERSION: ${{ steps.v.outputs.version }}
           # :latest is for the newest release: a pushed tag, or a run by hand
           # that asks for it.
-          LATEST: ${{ github.event_name == 'push' || inputs.latest }}
+          # Test builds and release candidates (v1.11-test1, v2.0-rc1) never.
+          LATEST: ${{ (github.event_name == 'push' || inputs.latest) && !contains(github.ref_name, '-') && !contains(inputs.tag || '', '-') }}
         run: |
           img=ghcr.io/adyoull/riscos-crossdev
           docker tag riscos-crossdev:test "$img:$VERSION"

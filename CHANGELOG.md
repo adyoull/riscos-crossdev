@@ -1,5 +1,23 @@
 # Changes
 
+## 1.11-test1 (test build, branch `mixed-link-test`)
+
+- **Mixed programs** (docs/MIXED.md): UnixLib, libstdc++ and libgcc linked
+  into the program, its other libraries shared through !SharedLibs.
+  - `-rdynamic` leaves a link dynamic (every other link still gets
+    `-static`).
+  - `crtmixed.o` (`toolchain/mixed/`) is linked into such programs, so
+    that C++ exceptions pass between a program and a library.
+  - `riscos.mk` has `RISCOS_MIXED_LDFLAGS`, `RISCOS_SO_CFLAGS`,
+    `RISCOS_SO_LDFLAGS` and `RISCOS_SO_LIBS`.
+  - `checks/check-static.sh` accepts a mixed program, and the new
+    `checks/check-shared-lib.sh` checks its libraries.
+  - `examples/mixed` builds `!MixHello`.
+- **The toolchain is rebuilt with UnixLib 5.0.3.7-rc4**, which starts a
+  mixed program correctly (its J1 change), with PThreadTicker 0.04.
+- **docker.yml** doesn't tag a test build or release candidate's image
+  `:latest`.
+
 ## 1.10
 
 - **A new toolchain, 1.10, with UnixLib 5.0.3.6** (was 5.0.3.5), from

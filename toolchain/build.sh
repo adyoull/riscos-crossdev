@@ -66,10 +66,21 @@ unpack_gccsdk() {
   # (--disable-shared below), and the driver adds -static to every link that
   # doesn't ask for -shared, -r or -mmodule (ld 2.30 crashes on a non-static
   # link when there are no shared libraries to use).
-  sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{!shared:%{!static:%{!r:%{!mmodule:-static}}}}" \\|' \
+  # Mixed programs (riscos-crossdev 1.11): -rdynamic also leaves the link
+  # dynamic. UnixLib, libstdc++ and libgcc still come from the static
+  # libraries (there are no shared ones), the program exports their symbols
+  # for its shared libraries, ld-riscos/so/2 is its interpreter, and
+  # crtmixed.o (toolchain/mixed) is linked in so that C++ exceptions find
+  # the libraries' tables. UnixLib 5.0.3.7 and later start such a program
+  # correctly (its J1 change).
+  sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{!shared:%{!static:%{!r:%{!mmodule:%{!rdynamic:-static}}}}}" \\|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
-  grep -q '%{!mmodule:-static}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+  grep -q '%{!rdynamic:-static}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
     { echo "couldn't add the default -static to GCCSDK's driver specs" >&2; exit 1; }
+  sed -i 's|^\(\t*\)" %{!shared:crt0.o%s}" \\$|&\n\1" %{rdynamic:%{!shared:%{!static:crtmixed.o%s}}}" \\|' \
+    gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
+  grep -q 'crtmixed.o%s' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    { echo "couldn't add crtmixed.o to GCCSDK's start files" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk
 H=$TC/gccsdk/autobuilder/develop/gcc
@@ -194,6 +205,7 @@ fi
 if [ "$WHAT" = all ]; then
   build_elf2aif
   "$HERE/libdl/install.sh" "$RISCOS_TOOLCHAIN"
+  "$HERE/mixed/install.sh" "$RISCOS_TOOLCHAIN"
   log "smoke test"
   printf '#include <stdio.h>\nint main(void){puts("hi");return 0;}\n' > hello.c
   printf '#include <iostream>\nint main(){std::cout<<"hi"<<std::endl;}\n' > hello.cc

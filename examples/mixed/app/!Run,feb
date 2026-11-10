@@ -1,0 +1,9 @@
+| !MixHello: UnixLib linked into the program, libgreet shared
+Set MixHello$Dir <Obey$Dir>
+RMEnsure SharedUnixLibrary 1.16 Error MixHello needs SharedUnixLibrary 1.16 or later
+If "<SharedLibs$Dir>" = "" Then Error MixHello needs !SharedLibs (with ld-riscos/so/2): let the Filer see it first
+| The program's own libraries are in its lib directory. SOManager reads
+| <program>$LD$Env for the program called "mixhello".
+Set MixHelloLibs$Path <MixHello$Dir>.lib.
+Set mixhello$LD$Env "LD_LIBRARY_PATH=/MixHelloLibs:"
+Run <MixHello$Dir>.mixhello

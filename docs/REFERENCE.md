@@ -72,7 +72,8 @@ them in the environment (or on the `make` command line) to override.
 | Command | Fails when |
 |---|---|
 | `checks/check-all.sh PROGRAM.elf [LIB.a...]` | Any of static, stack probes, FPU or UnixLib below fails (libraries: FPU only) |
-| `checks/check-static.sh PROGRAM.elf...` | The program needs a shared library |
+| `checks/check-static.sh PROGRAM.elf...` | The program needs a shared library (a mixed program, docs/MIXED.md, may need its own libraries, but not a shared UnixLib, libstdc++ or libgcc) |
+| `checks/check-shared-lib.sh LIBRARY.so...` | A mixed program's library isn't PIC, has its own UnixLib, or needs a shared UnixLib, libstdc++, libgcc_s or libm |
 | `checks/check-stack-probes.py PROGRAM.elf [OBJDUMP]` | A frame of 4 KB or more doesn't probe its stack |
 | `checks/check-fpu.sh FILE...` | A program, `.a` or `.o` uses VFPv4-only instructions |
 | `checks/check-unixlib.sh PROGRAM.elf` | UnixLib's pthread ticker block sizes disagree (`TICKER_BLOCK=472` for UnixLib before 5.0.3.1) |
@@ -134,6 +135,7 @@ Monday and opens a pull request when a port's fakes have changed.
 | Command or file | What |
 |---|---|
 | `toolchain/install-prebuilt.sh [TARBALL]` | `make prebuilt` |
+| `toolchain/mixed/install.sh [DIR]` | Install `crtmixed.o`, which the driver links into mixed programs (`-rdynamic`; docs/MIXED.md). Run by `make prebuilt` and `make toolchain` |
 | `toolchain/libdl/install.sh [DIR]` | Install `libdl.a`, a stub whose `dlopen` fails, so builds that link `-ldl` link (run by `make prebuilt` and `make toolchain`) |
 | `toolchain/relocate.sh [--check] [DIR]` | Point the toolchain's `.la` files at where it is (run by `make prebuilt`; run it after moving a toolchain). `--check`: say if any names a file that isn't there |
 | `toolchain/fetch.sh`, `toolchain/build.sh all` | `make toolchain`: fetch the sources in `SOURCES` (sha256-checked), build |

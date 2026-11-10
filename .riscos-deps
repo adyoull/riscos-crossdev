@@ -3,4 +3,4 @@
 # and opens a pull request when one has a newer release;
 # toolchain/deps-hook.sh updates devkit/DEVKIT or toolchain/SOURCES to match.
 riscos-mesa v20.3.5-18
-riscos-unixlib v5.0.3.6
+riscos-unixlib v5.0.3.7-rc4

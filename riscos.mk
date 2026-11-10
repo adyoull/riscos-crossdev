@@ -29,6 +29,16 @@ QEMU_ALIGNTRAP := $(RO_BIN)/qemu-arm-aligntrap
 RISCOS_CFLAGS ?= -O2 -mfpu=$(FPU) -mfloat-abi=hard -fstack-clash-protection
 RISCOS_LDFLAGS ?= -static
 
+# Mixed programs (test, 1.11; docs/MIXED.md): UnixLib linked in, the
+# program's other libraries shared through !SharedLibs.
+#   library:  $(RO_CC) $(RISCOS_SO_CFLAGS) -c x.c
+#             $(RO_CC) $(RISCOS_SO_LDFLAGS) -Wl,-soname,libx.so.1 -o libx.so x.o $(RISCOS_SO_LIBS)
+#   program:  $(RO_CC) $(RISCOS_CFLAGS) main.c $(RISCOS_MIXED_LDFLAGS) -L. -lx
+RISCOS_MIXED_LDFLAGS ?= -rdynamic
+RISCOS_SO_CFLAGS ?= $(RISCOS_CFLAGS) -fPIC
+RISCOS_SO_LDFLAGS ?= -shared -nostdlib
+RISCOS_SO_LIBS ?= -lgcc
+
 # The riscos-mesa devkit (make devkit): add these to compile and link lines,
 # e.g. $(RO_CC) $(RISCOS_CFLAGS) $(DEVKIT_CFLAGS) x.c $(RISCOS_LDFLAGS)
 #      $(DEVKIT_LDFLAGS) -lEGL -lOSMesa -lstdc++ -lz -lm   (devkit README)

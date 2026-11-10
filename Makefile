@@ -6,7 +6,8 @@
 #   make devkit      download and unpack the checksummed riscos-mesa devkit
 #                    (OpenGL, EGL, SDL2, OpenAL...) into devkit/env
 #   make hello       examples/hello -> examples/hello/out/Hello.zip
-#   make examples    every example: hello, wimp (a desktop program), cmake
+#   make examples    every example: hello, wimp (a desktop program), mixed
+#                    (a shared library; test), cmake
 #   make check       every test that runs on Linux (see docs/TESTING.md)
 #   make dist VERSION=x.y   the toolchain tarball for a release
 #   make image       the container image (docker/Dockerfile), as riscos-crossdev
@@ -36,6 +37,7 @@ hello:
 
 examples: hello
 	$(MAKE) -C examples/wimp $(EX_ARGS)
+	$(MAKE) -C examples/mixed $(EX_ARGS)
 	@if command -v cmake >/dev/null; then $(MAKE) -C examples/cmake $(EX_ARGS); \
 	else echo "SKIP examples/cmake (no cmake)"; fi
 
@@ -66,6 +68,8 @@ check: riscos-toolchain-present
 	$(MAKE) -C examples/hello $(EX_ARGS) all check
 	@echo "== examples/wimp: a desktop program, its Wimp SWIs faked"
 	$(MAKE) -C examples/wimp $(EX_ARGS) all check
+	@echo "== examples/mixed: UnixLib linked in, a shared library (test; docs/MIXED.md)"
+	$(MAKE) -C examples/mixed $(EX_ARGS) all check
 	@echo "== examples/cmake: built for RISC OS with CMake, tested under QEMU and on Linux"
 	@if command -v cmake >/dev/null; then $(MAKE) -C examples/cmake $(EX_ARGS) check; \
 	else echo "SKIP (no cmake: apt-get install cmake)"; fi

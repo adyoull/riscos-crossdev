@@ -50,8 +50,8 @@ expect 0 "toolchain: a program linking -ldl links (the libdl stub), and passes e
 printf '#include <semaphore.h>\n#include <time.h>\nint main(void){sem_t s; struct timespec t={0,0}; sem_init(&s,0,1); return sem_timedwait(&s,&t);}\n' > "$OUT/sem.c"
 expect 0 "UnixLib 5.0.3.6: sem_timedwait is declared and links" \
   sh -c "$CC -mfpu=vfpv3 -fstack-clash-protection -static -Wall -Werror -o '$OUT/sem' '$OUT/sem.c' -lpthread"
-expect 0 "PThreadTicker 0.03 is in the toolchain" \
-  sh -c "strings -a '$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa' | grep -q 'PThreadTicker.0\.03'"
+expect 0 "PThreadTicker 0.03 or later is in the toolchain" \
+  sh -c "strings -a '$RISCOS_TOOLCHAIN/riscos/PThrTicker,ffa' | grep -qE 'PThreadTicker.0\.0[3-9]'"
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
 expect 0 "UnixLib 5.0.2: -D_FILE_OFFSET_BITS=64 programs use the 64-bit calls" \
   sh -c "$RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T __unixlib_fstat64\$' && $RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T lseek64\$'"
