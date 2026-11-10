@@ -81,6 +81,10 @@ unpack_gccsdk() {
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   grep -q 'crtmixed.o%s' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
     { echo "couldn't add crtmixed.o to GCCSDK's start files" >&2; exit 1; }
+  # -rdynamic is a driver option only on targets that declare it (Linux's
+  # gnu-user.opt); declare it for RISC OS too.
+  grep -qx rdynamic gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt ||
+    printf '\nrdynamic\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
 }
 [ -d gccsdk ] || unpack_gccsdk
 H=$TC/gccsdk/autobuilder/develop/gcc
