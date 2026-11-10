@@ -93,12 +93,16 @@ unpack_gccsdk() {
     printf '\npthread\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
   sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{pthread:-D_REENTRANT}" \\|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
+  # A mixed program (-rdynamic) also links libstdc++ and libm, as g++ does:
+  # its shared libraries may be C++ (built -nostdlib), and use the
+  # program's libstdc++ even when the program is C. Only what they use is
+  # linked in (riscos-gtk: harfbuzz in a C program).
   # (A space at the end of %{...} is dropped: it goes after the brace.)
-  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} -lunixlib }"|' \
+  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm}} -lunixlib }"|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   grep -q '%{pthread:-D_REENTRANT}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h &&
-    grep -q '%{pthread:-lpthread} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
-    { echo "couldn't add -pthread to GCCSDK's driver specs" >&2; exit 1; }
+    grep -q '%{rdynamic:%{!shared:-lstdc++ -lm}} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    { echo "couldn't add -pthread and the mixed libraries to GCCSDK's driver specs" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk
 H=$TC/gccsdk/autobuilder/develop/gcc

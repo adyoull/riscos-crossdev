@@ -8,10 +8,11 @@
 # Every name a library needs must then be exported by the program or
 # another of its libraries (riscos-mixed-exports, for GCCSDK's).
 #
-#   checks/check-mixed-package.sh PROGRAM LIBDIR
+#   checks/check-mixed-package.sh PROGRAM LIBDIR...
 #     PROGRAM  the program (ELF; stripped or not)
-#     LIBDIR   the directory the app ships its libraries in, as on Linux
-#              (libgtk-3.so.0 or libgtk-3.so.0,e1f)
+#     LIBDIR   the directories on the program's LD_LIBRARY_PATH, in order,
+#              as on Linux (libgtk-3.so.0 or libgtk-3.so.0,e1f): the app's
+#              own lib directory, and any library pack it uses (!GTKLibs)
 #
 # Why: SOManager looks in the app's LD_LIBRARY_PATH first and then in
 # !SharedLibs. A library missing from the app would be found in
@@ -19,11 +20,12 @@
 # shared UnixLib with it, and the program would have two C libraries. (The
 # program stops at start-up if that happens: crtmixed.o checks.)
 . "$(dirname "$0")/../env.sh"
-[ $# -eq 2 ] && [ -f "$1" ] && [ -d "$2" ] || { echo "usage: $0 PROGRAM LIBDIR" >&2; exit 2; }
-prog=$1; dir=$2; bad=0; libs=
+[ $# -ge 2 ] && [ -f "$1" ] || { echo "usage: $0 PROGRAM LIBDIR..." >&2; exit 2; }
+prog=$1; shift; dirs=("$@"); dir="$*"; bad=0; libs=
+for d in "${dirs[@]}"; do [ -d "$d" ] || { echo "no such directory: $d" >&2; exit 2; }; done
 stubs=$RISCOS_TOOLCHAIN/$RISCOS_HOST/lib/mixed-stubs
 needed() { $RISCOS_HOST-readelf -dW "$1" 2>/dev/null | awk '/\(NEEDED\)/ {print $NF}' | tr -d '[]'; }
-find_lib() { for f in "$dir/$1" "$dir/$1,e1f"; do [ -f "$f" ] && { echo "$f"; return 0; }; done; return 1; }
+find_lib() { for d in "${dirs[@]}"; do for f in "$d/$1" "$d/$1,e1f"; do [ -f "$f" ] && { echo "$f"; return 0; }; done; done; return 1; }
 declare -A seen
 queue=$(needed "$prog")
 [ -n "$queue" ] || { echo "WRONG: $prog needs no shared library: is it a mixed program?" >&2; exit 1; }
@@ -36,7 +38,7 @@ while [ -n "$queue" ]; do
         if f=$(find_lib "$n") && $RISCOS_HOST-nm -D --defined-only "$f" 2>/dev/null | grep -qw __riscos_mixed_stub; then
           echo "  $n: the stand-in (the program's own is used)"
         else
-          echo "WRONG: a library needs $n: copy the stand-in $stubs/$n into $dir${f:+ (the one there is a real one)}" >&2; bad=1
+          echo "WRONG: a library needs $n: copy the stand-in $stubs/$n into ${dirs[0]}${f:+ (the one there is a real one)}" >&2; bad=1
         fi
         continue;;
       libunixlib.so*|libstdc++.so*|libgcc_s.so*|libm.so*|libc.so*|libpthread.so*)

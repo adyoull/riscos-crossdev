@@ -43,6 +43,13 @@ RISCOS_MIXED_LDFLAGS ?= -rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)
 RISCOS_SO_CFLAGS ?= $(RISCOS_CFLAGS) -fPIC
 RISCOS_SO_LDFLAGS ?= -shared -nostdlib
 RISCOS_SO_LIBS ?= -lgcc
+# A shared library from a static archive built -fPIC (riscos-gtk's way: no
+# libtool needed). Arguments: the .so, its SONAME, the archive, and the
+# libraries it uses (-L/-l, or .so files); --as-needed keeps only those it
+# calls in its NEEDED list.
+#   $(call RISCOS_SO_FROM_A,out/libx.so,libx.so.1,out/libx.a,-Lout -ly)
+RISCOS_SO_FROM_A = $(RO_CC) $(RISCOS_SO_LDFLAGS) -Wl,-soname,$(2) -o $(1) \
+  -Wl,--whole-archive $(3) -Wl,--no-whole-archive -Wl,--as-needed $(4) -Wl,--no-as-needed $(RISCOS_SO_LIBS)
 
 # The riscos-mesa devkit (make devkit): add these to compile and link lines,
 # e.g. $(RO_CC) $(RISCOS_CFLAGS) $(DEVKIT_CFLAGS) x.c $(RISCOS_LDFLAGS)

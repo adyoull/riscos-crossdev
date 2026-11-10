@@ -108,7 +108,7 @@ __attribute__((constructor(101))) static void crtmixed_one_unixlib(void)
         if (what) {
           fprintf(stderr, "This program has its own UnixLib, libstdc++ and libgcc, but one of its "
                   "libraries also loaded a shared %s (%s). Put riscos-crossdev's stand-ins "
-                  "(mixed-stubs) in the program's own lib directory (docs/MIXED.md).\n", what, t->libname);
+                  "(mixed-stubs) in its own lib directory, or its library pack (docs/MIXED.md).\n", what, t->libname);
           exit(1);
         }
       }
