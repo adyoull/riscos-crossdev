@@ -1,5 +1,5 @@
 /* libgreet: a shared library for a "mixed" program. It has no UnixLib of
-   its own (built -nostdlib): malloc and snprintf are the program's, and
+   its own (built -nodefaultlibs): malloc and snprintf are the program's, and
    so is greet_hook, which the library calls back. */
 #include <stdio.h>
 #include <stdlib.h>

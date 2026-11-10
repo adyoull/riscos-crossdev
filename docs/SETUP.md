@@ -46,11 +46,11 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.11.1 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.11.2 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
 1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5), 1.10 (UnixLib 5.0.3.6) and
-1.11 (UnixLib 5.0.3.7) have their own; 1.11.1 uses 1.11's.
+1.11 (UnixLib 5.0.3.7) have their own; 1.11.1 and 1.11.2 use 1.11's.
 
 **Prebuilt** (a few minutes):
 
@@ -129,7 +129,7 @@ script that adds `-rdynamic` itself makes a mixed program:
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.11 and 1.11.1: **20.3.5-18**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.11 to 1.11.2: **20.3.5-18**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh

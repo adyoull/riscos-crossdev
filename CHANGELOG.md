@@ -1,5 +1,18 @@
 # Changes
 
+## 1.11.2
+
+The toolchain is 1.11's. From riscos-mesa's shared builds of the devkit:
+
+- **`RISCOS_SO_LDFLAGS` is `-shared -nodefaultlibs`** (was `-nostdlib`).
+  `-nostdlib` also dropped the start files and `__dso_handle`, so a C++
+  library with static objects didn't link. Tested on RISC OS on Linux:
+  such a library's objects are built when it loads and destroyed, in
+  order, at exit. `checks/selftest.sh` builds one.
+- **docs/MIXED.md:** archives holding an object twice, `--gc-sections`, a
+  shared SDL needing `-ldl`, stripping, and riscos-mesa's shared devkit
+  libraries (test build 20.3.5-19c, `!MesaLibs`).
+
 ## 1.11.1
 
 Documentation only; the toolchain is 1.11's.

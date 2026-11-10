@@ -52,7 +52,7 @@ Copy the example closest to what you're making:
 | [`examples/hello`](../examples/hello) | A command-line program that runs in a task window | A Makefile with every step; a Fake RISC OS test of its SWI calls; a QEMU test of its portable part |
 | [`examples/wimp`](../examples/wimp) | A desktop program: icon bar icon, window, menu | The Wimp poll loop kept apart from the event handling, so the handling can be tested; every Wimp SWI it uses faked in the test; `!Sprites` from PNGs |
 | [`examples/cmake`](../examples/cmake) | A library and a program, built with CMake | One `CMakeLists.txt` built for RISC OS, for ARM Linux with ctest under QEMU, and for the host; a library from the devkit found by `find_package` |
-| [`examples/mixed`](../examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nostdlib`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` ([MIXED.md](MIXED.md)) |
+| [`examples/mixed`](../examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nodefaultlibs`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` ([MIXED.md](MIXED.md)) |
 
 The devkit has six more, for OpenGL, OpenGL ES, SDL2 and OpenAL, in
 `devkit/env/examples` (see its `README.md`); `make check-devkit` builds them
@@ -79,8 +79,8 @@ project gets the same compiler and libraries. Three ways, best first:
 
   ```sh
   git submodule add https://github.com/adyoull/riscos-crossdev crossdev
-  git -C crossdev checkout v1.11.1
-  git add crossdev && git commit -m "riscos-crossdev 1.11.1"
+  git -C crossdev checkout v1.11.2
+  git add crossdev && git commit -m "riscos-crossdev 1.11.2"
   ```
 
   The tag is recorded in your repository, and `RCD_DIR := crossdev` is
@@ -90,9 +90,9 @@ project gets the same compiler and libraries. Three ways, best first:
   (`RCD_DIR=~/riscos-crossdev`) and make your build fail on the wrong
   version: `git -C $(RCD_DIR) describe --tags` must print the tag you
   expect.
-- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.11.1` has the
+- **The container image.** `ghcr.io/adyoull/riscos-crossdev:1.11.2` has the
   release installed, with `RCD_DIR` set: `docker run --rm -v "$PWD":/src
-  ghcr.io/adyoull/riscos-crossdev:1.11.1 make`. It's also how your port
+  ghcr.io/adyoull/riscos-crossdev:1.11.2 make`. It's also how your port
   builds on GitHub, with a pull request each time riscos-crossdev has a
   new release (CI.md).
 - **Only the toolchain.** If all you need is the compiler, unpack the

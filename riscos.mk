@@ -41,7 +41,7 @@ RISCOS_LDFLAGS ?= -static
 RISCOS_MIXED_STUBS ?= $(RISCOS_TOOLCHAIN)/$(RISCOS_HOST)/lib/mixed-stubs
 RISCOS_MIXED_LDFLAGS ?= -rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)
 RISCOS_SO_CFLAGS ?= $(RISCOS_CFLAGS) -fPIC
-RISCOS_SO_LDFLAGS ?= -shared -nostdlib
+RISCOS_SO_LDFLAGS ?= -shared -nodefaultlibs
 RISCOS_SO_LIBS ?= -lgcc
 # A shared library from a static archive built -fPIC (riscos-gtk's way: no
 # libtool needed). Arguments: the .so, its SONAME, the archive, and the

@@ -37,6 +37,9 @@ expect 0 "static: the toolchain has no shared target libraries (beside the mixed
   sh -c "! find '$RISCOS_TOOLCHAIN/arm-riscos-gnueabihf/lib' '$RISCOS_TOOLCHAIN/lib/gcc/arm-riscos-gnueabihf' \( -path '*/plugin' -o -path '*/mixed-stubs' \) -prune -o -name '*.so*' -print | grep -q ."
 $CC -mfpu=vfpv3 -fPIC -shared -nostdlib -o "$OUT/shared.so" "$S/fma.c"
 expect 1 "static: a shared object is reported" "$HERE/check-static.sh" "$OUT/shared.so"
+printf 'struct S { S(); ~S(); };\nS::S() {}\nS::~S() {}\nstatic S s;\nint f(void) { return 1; }\n' > "$OUT/cxxstatic.cc"
+expect 0 "mixed: a C++ library with a static object links with -shared -nodefaultlibs, and passes" \
+  sh -c "$RISCOS_HOST-g++ -mfpu=vfpv3 -mfloat-abi=hard -fPIC -shared -nodefaultlibs -Wl,-soname,libcs.so.1 -o '$OUT/libcs.so' '$OUT/cxxstatic.cc' -lgcc && '$HERE/check-shared-lib.sh' '$OUT/libcs.so'"
 expect 0 "UnixLib: a linked program is consistent" "$HERE/check-unixlib.sh" "$OUT/probed"
 expect 1 "UnixLib: the same program fails against the old 472-byte block" \
   env TICKER_BLOCK=472 "$HERE/check-unixlib.sh" "$OUT/probed"

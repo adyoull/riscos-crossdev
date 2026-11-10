@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.11.1 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.11.2 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -39,7 +39,7 @@ Or, on any machine with Docker (no setup at all), from your project's
 directory:
 
 ```sh
-docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.11.1 make check all
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.11.2 make check all
 ```
 
 ## Documentation
@@ -66,7 +66,7 @@ zip for the Pi. Copy the closest one to start (USING.md, section 2).
 | [`examples/hello`](examples/hello) | A command-line program | A Makefile with every step; a Fake RISC OS test; a QEMU test |
 | [`examples/wimp`](examples/wimp) | A desktop program: icon bar icon, window, menu | Testing Wimp code by faking the Wimp's SWIs; `!Sprites` from PNGs |
 | [`examples/cmake`](examples/cmake) | A library and a program, with CMake | One `CMakeLists.txt` built for RISC OS, for ARM Linux under QEMU (ctest), and for the host; a devkit library via `find_package` |
-| [`examples/mixed`](examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nostdlib`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` |
+| [`examples/mixed`](examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nodefaultlibs`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` |
 
 The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
 (`devkit/env/examples`).

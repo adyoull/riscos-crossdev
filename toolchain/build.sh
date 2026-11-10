@@ -94,7 +94,7 @@ unpack_gccsdk() {
   sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{pthread:-D_REENTRANT}" \\|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   # A mixed program (-rdynamic) also links libstdc++ and libm, as g++ does:
-  # its shared libraries may be C++ (built -nostdlib), and use the
+  # its shared libraries may be C++ (built -nodefaultlibs), and use the
   # program's libstdc++ even when the program is C. Only what they use is
   # linked in (riscos-gtk: harfbuzz in a C program).
   # (A space at the end of %{...} is dropped: it goes after the brace.)

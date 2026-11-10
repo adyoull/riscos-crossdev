@@ -43,7 +43,7 @@ them in the environment (or on the `make` command line) to override.
 | `RISCOS_CFLAGS` | `-O2 -mfpu=$(FPU) -mfloat-abi=hard -fstack-clash-protection` |
 | `RISCOS_LDFLAGS` | `-static` |
 | `RISCOS_MIXED_LDFLAGS` | `-rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)`: a mixed program (docs/MIXED.md) |
-| `RISCOS_SO_CFLAGS`, `RISCOS_SO_LDFLAGS`, `RISCOS_SO_LIBS` | A mixed program's library: `$(RISCOS_CFLAGS) -fPIC`; `-shared -nostdlib`; `-lgcc` |
+| `RISCOS_SO_CFLAGS`, `RISCOS_SO_LDFLAGS`, `RISCOS_SO_LIBS` | A mixed program's library: `$(RISCOS_CFLAGS) -fPIC`; `-shared -nodefaultlibs`; `-lgcc` |
 | `RISCOS_SO_FROM_A` | `$(call RISCOS_SO_FROM_A,OUT.so,SONAME,LIB.a,LIBS)`: a shared library from a static archive |
 | `RISCOS_MIXED_STUBS` | The stand-ins for a shared UnixLib, libstdc++, libgcc_s and libm (`lib/mixed-stubs`) |
 | `DEVKIT_CFLAGS`, `DEVKIT_LDFLAGS` | `-I` and `-L` for the devkit |

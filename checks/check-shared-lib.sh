@@ -1,6 +1,6 @@
 #!/bin/bash
 # Check shared libraries (.so) for "mixed" RISC OS programs (riscos-crossdev
-# 1.11): built -fPIC -shared -nostdlib, so that they use the program's
+# 1.11): built -fPIC -shared -nodefaultlibs, so that they use the program's
 # UnixLib rather than carrying their own.
 #
 #   checks/check-shared-lib.sh [--stand-ins] LIBRARY.so...
@@ -34,11 +34,11 @@ for f in "$@"; do
   fi
   own=$($RISCOS_HOST-nm -D --defined-only "$f" | awk '{print $3}' | grep -xE 'malloc|free|printf|__unixinit|_main|__main' | tr '\n' ' ')
   if [ -n "$sys" ]; then
-    echo "WRONG: $f needs $sys: link it with -nostdlib (the program provides them)" >&2; bad=1
+    echo "WRONG: $f needs $sys: link it with -nodefaultlibs (the program provides them)" >&2; bad=1
   elif echo "$dyn" | grep -q '(TEXTREL)'; then
     echo "WRONG: $f has text relocations: compile all of it with -fPIC" >&2; bad=1
   elif [ -n "$own" ]; then
-    echo "WRONG: $f defines UnixLib's $own: link it with -nostdlib, not with libunixlib.a" >&2; bad=1
+    echo "WRONG: $f defines UnixLib's $own: link it with -nodefaultlibs, not with libunixlib.a" >&2; bad=1
   else
     echo "OK: $f: $(echo "$dyn" | sed -n 's/.*(SONAME).*\[\(.*\)\]/\1/p'), PIC, uses the program's UnixLib$via"
   fi

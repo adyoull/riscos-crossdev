@@ -40,7 +40,7 @@ $(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
 | Variable | Value | What it does |
 |---|---|---|
 | `RISCOS_SO_CFLAGS` | `$(RISCOS_CFLAGS) -fPIC` | Library code that every program can share |
-| `RISCOS_SO_LDFLAGS` | `-shared -nostdlib` | A shared library, with no UnixLib, libstdc++ or libgcc of its own |
+| `RISCOS_SO_LDFLAGS` | `-shared -nodefaultlibs` | A shared library, with no UnixLib, libstdc++ or libgcc of its own (1.11 had `-nostdlib`) |
 | `RISCOS_SO_LIBS` | `-lgcc` | libgcc's helpers, private to the library (C++ libraries need its unwinder) |
 | `RISCOS_MIXED_LDFLAGS` | `-rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)` | Link the program dynamically, with UnixLib still linked in |
 | `RISCOS_MIXED_STUBS` | the toolchain's `mixed-stubs` | Stand-ins for GCCSDK-built libraries (below) |
@@ -67,10 +67,32 @@ $(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
   scripts and CMake's `ENABLE_EXPORTS` do). They now make a dynamic
   program. `checks/check-static.sh` says so: "dynamically linked but needs
   no shared library: drop -rdynamic".
-- **Don't link a library with `libunixlib.a`.** `-nostdlib` keeps UnixLib
+- **Don't link a library with `libunixlib.a`.** `-nodefaultlibs` keeps UnixLib
   out of it; with two copies there would be two heaps.
   `checks/check-shared-lib.sh` catches this, and libraries that aren't
   position-independent.
+- **`-nodefaultlibs`, not `-nostdlib`.** Both leave out UnixLib, libstdc++
+  and libgcc. `-nostdlib` also leaves out the start files
+  (`crtbeginS.o` and the rest), and with them `__dso_handle`: a C++
+  library with static objects then fails to link ("undefined reference to
+  `__dso_handle`"). With `-nodefaultlibs` each library's static objects
+  are built when it loads and destroyed, in order, when the program exits
+  (tested on RISC OS on Linux). Found by riscos-mesa.
+- **Libraries from big archives:**
+  - `--whole-archive` (in `RISCOS_SO_FROM_A`) fails with "multiple
+    definition" if the archive holds the same object twice, as meson's
+    overlapping internal libraries can make it. A static link never
+    notices. Extract each distinct member once and link the objects
+    (riscos-mesa's `tools/ar-unique.py` does this).
+  - Code compiled with `-ffunction-sections -fdata-sections` that exports
+    only its API shrinks a lot with `-Wl,--gc-sections` (riscos-mesa's
+    libOSMesa: 17 MB to 7.6 MB unstripped).
+  - A shared SDL holds all of SDL, including `SDL_LoadObject`'s `dlopen`,
+    which a static link only pulled in when used. Link the program with
+    `-ldl` (the toolchain's stub) to satisfy it.
+- **Strip the libraries you ship** with `--strip-unneeded`. Unstripped,
+  their symbol tables name the build machine's directories. Stripped ones
+  still link.
 
 ## Checking
 
@@ -230,7 +252,11 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
 
 ## The devkit
 
-The riscos-mesa devkit's libraries are static (`.a`). Until riscos-mesa
-publishes shared builds of them, a mixed program links the devkit's
-libraries in, as before. Only libraries you build yourself with the
-settings above are shared.
+The riscos-mesa devkit's libraries in `lib/` are static (`.a`): a mixed
+program can link them in, as a static one does.
+
+riscos-mesa is adding shared builds of them, from its test build
+20.3.5-19c: libOSMesa, libEGL, libGLU, libglut, libSDL2 and libopenal as
+`.so` files in the devkit's `lib/shared`, and as `!MesaLibs`, a library
+pack for `!Boot.Resources`. They haven't run on RISC OS yet; until a
+release has them, link the devkit's libraries in.
