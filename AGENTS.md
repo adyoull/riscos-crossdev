@@ -2,7 +2,8 @@
 
 riscos-crossdev builds and tests RISC OS programs on Linux. It doesn't
 emulate RISC OS. A C/C++ program is cross-compiled with GCCSDK GCC 10
-(`arm-riscos-gnueabihf`, UnixLib, static only), checked, and tested in
+(`arm-riscos-gnueabihf`, UnixLib; static, or *mixed* with `-rdynamic`:
+UnixLib linked in, other libraries shared, `docs/MIXED.md`), checked, and tested in
 layers on Linux. A human tests the result on a Raspberry Pi. People read
 `README.md` and `docs/`; this page is the short version for an assistant
 working in this repo, or porting a program with it.

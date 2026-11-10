@@ -1,8 +1,7 @@
-# Mixed programs: UnixLib linked in, other libraries shared (test)
+# Mixed programs: UnixLib linked in, other libraries shared
 
-**This is a test build** (`v1.11-test1`, branch `mixed-link-test`). It
-needs UnixLib 5.0.3.7, which is still a release candidate (rc4). Ordinary
-static programs are built exactly as before.
+New in 1.11, with UnixLib 5.0.3.7. Ordinary static programs are built
+exactly as before.
 
 A crossdev program is normally static: UnixLib, libstdc++ and every other
 library are linked into it. A *mixed* program still has UnixLib, libstdc++
@@ -11,10 +10,14 @@ and libgcc linked in. Its other libraries, though, are shared libraries
 (SOManager and `ld-riscos/so/2`). Programs that use the same library then
 share one copy of its code in memory.
 
-It has been tested on RISC OS on Linux (in QEMU, and on the owner's own
-machine) with `MixTest`: C and C++, threads, signals, and exceptions
-between a program and a library. It hasn't yet been run on RISC OS 5
-directly on a Pi.
+**Tested:**
+
+- on RISC OS on Linux (in QEMU, and on the owner's own machine) with
+  `MixTest`: C and C++, threads, signals, and exceptions between a
+  program and a library;
+- on RISC OS 5 directly, on a Raspberry Pi, with riscos-gtk's mixed Geany
+  and L3afpad. Both used one copy of GTK's 26 libraries (20 MB), the same
+  as Geany alone.
 
 ## Building
 
@@ -27,6 +30,10 @@ $(RO_CC) $(RISCOS_SO_LDFLAGS) -Wl,-soname,libgreet.so.1 -o libgreet.so greet.o $
 
 # The program: -rdynamic instead of -static.
 $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
+
+# A library from a static archive built with -fPIC (no libtool needed):
+# the .so, its SONAME, the archive, and the libraries it uses.
+$(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
 ```
 
 | Variable | Value | What it does |
@@ -36,6 +43,7 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
 | `RISCOS_SO_LIBS` | `-lgcc` | libgcc's helpers, private to the library (C++ libraries need its unwinder) |
 | `RISCOS_MIXED_LDFLAGS` | `-rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)` | Link the program dynamically, with UnixLib still linked in |
 | `RISCOS_MIXED_STUBS` | the toolchain's `mixed-stubs` | Stand-ins for GCCSDK-built libraries (below) |
+| `RISCOS_SO_FROM_A` | a `$(call …)` | A shared library from a static archive: `--whole-archive`, and `--as-needed` for the libraries it uses |
 
 - **What `-rdynamic` does:** with this toolchain it leaves the link
   dynamic (every other link gets `-static`).
@@ -46,6 +54,12 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
   - `ld-riscos/so/2` becomes the program's interpreter.
   - `crtmixed.o` is linked in, so C++ exceptions can pass between a
     library and the program.
+  - libstdc++ is linked in too, even into a C program, as `g++` does: a
+    library may be C++ (riscos-gtk's harfbuzz is). Only what the libraries
+    use is linked in.
+- **`-pthread` works** as on Linux (`_REENTRANT`, and an empty
+  `libpthread`: UnixLib has the threads). Threaded programs ship the
+  PThreadTicker module, static or mixed.
 - **A `-rdynamic` link needs at least one shared library on the line.**
   Without one, binutils 2.30's ld crashes ("ld terminated with signal 11").
 - **Watch for builds that already pass `-rdynamic`** (some configure
@@ -102,7 +116,8 @@ and signal handlers.
   $(RO_CXX) $(RISCOS_CFLAGS) -o prog main.o $(RISCOS_MIXED_LDFLAGS) \
       $(shell riscos-mixed-exports libfoo.so) -L. -lfoo
   ```
-- They're used only by this app. Other programs, fully shared ones
+- They're used only by the programs whose `LD_LIBRARY_PATH` has them.
+  Other programs, fully shared ones
   included, still get the real shared UnixLib from !SharedLibs: SOManager
   tells libraries apart by their full path, not their name.
 - Nothing needs renaming: the program's UnixLib is linked in, so it has no
@@ -121,8 +136,9 @@ Three checks keep it to one UnixLib:
    missing, so the one in !SharedLibs was found), the program stops before
    `main` with a message naming it.
 
-Keep all the app's libraries in its own `lib` directory: a library missing
-there would be looked for in !SharedLibs.
+Keep every library the program needs in the directories on its
+`LD_LIBRARY_PATH` (below): a library missing there would be looked for in
+!SharedLibs.
 
 Tested on RISC OS on Linux (QEMU, NativeSupport 0.33):
 
@@ -150,11 +166,23 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
 
 - **The program:** it stays an ELF file (filetype &E1F), stripped. It isn't
   converted with `elf2aif`. !SharedLibs runs it (`Alias$@RunType_E1F`).
-- **The libraries:** put them in a directory of the app's own, under their
-  SONAME, such as `lib.libgreet/so/1` (`libgreet.so.1,e1f` on Linux).
+- **The libraries** go under their SONAME, such as `lib.libgreet/so/1`
+  (`libgreet.so.1,e1f` on Linux), in one of two places:
+  - **in the app's own directory,** for libraries only it uses
+    (`!MixHello.lib`);
+  - **in a library pack in `!Boot.Resources`,** for libraries several apps
+    share, as riscos-gtk's `!GTKLibs` holds GTK's 26. Its `!Boot` sets
+    `GTKLibs$Path`; each app's `!Run` boots it if it hasn't been.
+- **Only one copy of each file is shared.** SOManager loads each library
+  file once and shares it between every program that uses that file. Two
+  apps each with their own copy of a library load it twice. So libraries
+  meant to be shared go in one pack, used by every app.
+- **Not in !SharedLibs.lib.** GCCSDK's own packages there use the same
+  SONAMEs (`libz.so.1`, `libpng16.so.16`, `libglib-2.0.so.0`…) for
+  programs built against the shared UnixLib.
 - **`!Run` tells the loader where they are.** The variable is named after
   the program's leaf name, or after the app (without the `!`) when the
-  program is `!RunImage`:
+  program is `!RunImage`. A pack's directory goes after the app's own:
 
   ```
   Set MixHelloLibs$Path <MixHello$Dir>.lib.
@@ -162,14 +190,40 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
   Run <MixHello$Dir>.mixhello
   ```
 
+  riscos-gtk's `!Geany` uses its pack like this (from its `!Run`, which
+  runs on RISC OS 5 and RISC OS on Linux):
+
+  ```
+  If "<SharedLibs$Dir>" = "" Then IfThere Boot:Resources.!SharedLibs.!Boot Then Run Boot:Resources.!SharedLibs.!Boot
+  If "<GTKLibs$Dir>" = "" Then IfThere Boot:Resources.!GTKLibs.!Boot Then Run Boot:Resources.!GTKLibs.!Boot
+  Unset Geany$SO2
+  IfThere SharedLibs:lib.ld-riscos-eabihf/so Then Set Geany$SO2 1
+  If "<Geany$SO2>" = "" Then Error The !SharedLibs booted has no ld-riscos/so/2: Geany needs a newer one (GCCSDK 8 or later) in !Boot.Resources.
+  If "<GTKLibs$Dir>" = "" Then Error Geany needs !GTKLibs in !Boot.Resources
+  Set geany$LD$Env "LD_LIBRARY_PATH=/GTKLibs:"
+  Run <Geany$Dir>.geany %*0
+  ```
+- **Check the package** with every directory, in order:
+  `checks/check-mixed-package.sh PROGRAM APPLIBDIR PACKDIR`.
+
 - **What users need:**
   - SharedUnixLibrary 1.16 or later;
   - ARMEABISupport (1.05 and 1.08 both tested);
   - a **!SharedLibs that has `ld-riscos/so/2`** (GCCSDK 8 or later; Iris
-    ships one). riscos.info's SharedLibs 4.0 package has only the older
-    `ld-riscos/so/1` and won't run these programs.
+    ships one), in `!Boot.Resources`. riscos.info's SharedLibs 4.0 package
+    has only the older `ld-riscos/so/1` and won't run these programs.
+    `!Run` can check for it, as `!Geany`'s does above;
+  - any library pack the app uses.
 - **On RISC OS on Linux,** use NativeSupport 0.33 or later. Older versions
   abort after any program removes a dynamic area.
+
+## Not done yet
+
+- **`-Wl,--as-needed` for the program** isn't in `RISCOS_MIXED_LDFLAGS`. A
+  program then names only the libraries it calls itself, and the loader
+  finds the rest through them. It hasn't been tried with SOManager, and
+  ld 2.30 crashes on an `-rdynamic` link left with no shared library. Add
+  it yourself if you need it, and test.
 
 ## The devkit
 

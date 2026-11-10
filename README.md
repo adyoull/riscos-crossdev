@@ -10,7 +10,7 @@ layers, each catching what the one before it can't:
 
 | Layer | What it is | What it catches |
 |---|---|---|
-| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.3.6, built from source and static only; `elf2aif` turns the static ELF into an Absolute (AIF) file | Doesn't compile or link |
+| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.3.7, built from source; programs are static, and `elf2aif` turns the ELF into an Absolute (AIF) file, or *mixed* (UnixLib linked in, other libraries shared: [docs/MIXED.md](docs/MIXED.md)) | Doesn't compile or link |
 | 2. Checks | Run on every build: static linking, stack probes, unaligned casts, FPU level, UnixLib consistency | Code that builds, but aborts or hangs on RISC OS |
 | 3. Fake RISC OS | Your RISC OS-specific C, compiled for Linux against C fakes of the SWIs it calls | Wrong SWI use and logic errors, in a debugger, in seconds |
 | 4. QEMU user mode | Your portable code as real ARM code, on a QEMU patched to trap unaligned accesses like RISC OS, emulating a Cortex-A8 (VFPv3). Unicorn for module and assembler routines | Alignment aborts, VFPv4-only instructions, ARM code-generation bugs |
@@ -23,7 +23,7 @@ Layers 1 to 4 run from `make check`. Layer 5 is you, with
 
 ```sh
 sudo apt-get install ...          # the list is in docs/SETUP.md
-git clone -b v1.10 https://github.com/adyoull/riscos-crossdev
+git clone -b v1.11 https://github.com/adyoull/riscos-crossdev
 cd riscos-crossdev
 make prebuilt      # download the checksummed toolchain into toolchain/env
                    # (or: make toolchain, to build it from source: an hour or more)
@@ -39,7 +39,7 @@ Or, on any machine with Docker (no setup at all), from your project's
 directory:
 
 ```sh
-docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.10 make check all
+docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.11 make check all
 ```
 
 ## Documentation
@@ -49,6 +49,7 @@ docker run --rm -v "$PWD":/src ghcr.io/adyoull/riscos-crossdev:1.10 make check a
 | [docs/SETUP.md](docs/SETUP.md) | Installing: packages, the toolchain (prebuilt or from source), the devkit |
 | [docs/USING.md](docs/USING.md) | **Your own program:** starting from an example, building with Make, CMake or configure, libraries, making the app, testing, porting |
 | [docs/RISCOS-RULES.md](docs/RISCOS-RULES.md) | What RISC OS enforces that Linux doesn't. Read it before porting anything |
+| [docs/MIXED.md](docs/MIXED.md) | Mixed programs: UnixLib linked in, other libraries shared between programs (new in 1.11) |
 | [docs/TESTING.md](docs/TESTING.md) | Each test layer: the checks, the Fake RISC OS and the ports' fakes, QEMU, Unicorn |
 | [docs/PI-TESTING.md](docs/PI-TESTING.md) | Testing on a Raspberry Pi |
 | [docs/REFERENCE.md](docs/REFERENCE.md) | Every command, setting and file |
@@ -65,6 +66,7 @@ zip for the Pi. Copy the closest one to start (USING.md, section 2).
 | [`examples/hello`](examples/hello) | A command-line program | A Makefile with every step; a Fake RISC OS test; a QEMU test |
 | [`examples/wimp`](examples/wimp) | A desktop program: icon bar icon, window, menu | Testing Wimp code by faking the Wimp's SWIs; `!Sprites` from PNGs |
 | [`examples/cmake`](examples/cmake) | A library and a program, with CMake | One `CMakeLists.txt` built for RISC OS, for ARM Linux under QEMU (ctest), and for the host; a devkit library via `find_package` |
+| [`examples/mixed`](examples/mixed) | A mixed program and its shared library | `-rdynamic`, a library built `-shared -nostdlib`, `!Run` pointing the loader at the app's `lib` directory, `check-mixed-package.sh` |
 
 The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
 (`devkit/env/examples`).

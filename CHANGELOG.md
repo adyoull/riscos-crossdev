@@ -1,5 +1,38 @@
 # Changes
 
+## 1.11
+
+- **A new toolchain, 1.11, with UnixLib 5.0.3.7** (was 5.0.3.6), from
+  riscos-unixlib, and PThreadTicker 0.04. UnixLib's changes: shared memory
+  with ARMEABISupport 1.08 as well as 1.05, and starting mixed programs.
+  Its code is the same as 5.0.3.7-rc4, which the test builds used.
+- **Mixed programs** (docs/MIXED.md): UnixLib, libstdc++ and libgcc linked
+  into the program, its other libraries shared through !SharedLibs
+  (SOManager and `ld-riscos/so/2`). Programs that use the same library
+  file share one copy. Static programs are built exactly as before.
+  - Link with `-rdynamic` (`RISCOS_MIXED_LDFLAGS`); build libraries with
+    `RISCOS_SO_CFLAGS`, `RISCOS_SO_LDFLAGS` and `RISCOS_SO_LIBS`, or from
+    a static archive with `$(call RISCOS_SO_FROM_A,...)`.
+  - The driver links `crtmixed.o` (C++ exceptions between a program and
+    its libraries) and libstdc++ into a mixed program, even a C one, so
+    C++ libraries work.
+  - One UnixLib, always: `crtmixed.o` stops a program whose libraries
+    loaded a real shared UnixLib; stand-ins (`$(RISCOS_MIXED_STUBS)`) and
+    `riscos-mixed-exports` let libraries built for fully shared programs
+    (GCCSDK's) use the program's UnixLib.
+  - Checks: `check-static.sh` accepts a mixed program;
+    `check-shared-lib.sh` checks its libraries; `check-mixed-package.sh`
+    checks a package, with its library packs.
+  - `examples/mixed` builds `!MixHello`.
+  - Tested on RISC OS 5 on a Raspberry Pi with riscos-gtk's mixed Geany and
+    L3afpad, sharing one copy of GTK's libraries; and on RISC OS on Linux
+    with MixTest, and with static, mixed and fully shared programs running
+    at once.
+- **`-pthread` works**, as on Linux (`_REENTRANT`, `-lpthread`).
+- **docker.yml** doesn't tag a test build or release candidate's image
+  `:latest`.
+- The test builds 1.11-test1 and 1.11-test2 led up to this release.
+
 ## 1.11-test2 (test build, branch `mixed-link-test`)
 
 - **`-pthread` works** (the driver rejected it): as on Linux, it defines
