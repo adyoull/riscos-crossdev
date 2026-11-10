@@ -36,6 +36,7 @@ $(OUT)/MixHello.zip: $(OUT)/mixhello $(OUT)/libgreet.so app/!Run,feb | checks
 	$(RO_STRIP) -o $(OUT)/!MixHello/mixhello,e1f $(OUT)/mixhello
 	$(RO_STRIP) --strip-unneeded -o $(OUT)/!MixHello/lib/libgreet.so.1,e1f $(OUT)/libgreet.so
 	cp app/!Run,feb $(OUT)/!MixHello/
+	$(RCD_DIR)/checks/check-mixed-package.sh $(OUT)/!MixHello/mixhello,e1f $(OUT)/!MixHello/lib
 	$(ROZIP) $@ -C $(OUT) !MixHello
 	@echo "$@: unzip it on RISC OS and run !MixHello (needs !SharedLibs with ld-riscos/so/2)"
 

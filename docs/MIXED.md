@@ -66,6 +66,35 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
   - it has no text relocations;
   - it doesn't define UnixLib's own functions.
 
+- `checks/check-mixed-package.sh PROGRAM LIBDIR` checks a package: every
+  library the program needs, directly or through another library, is in
+  LIBDIR (as `libX.so.N` or `libX.so.N,e1f`) and passes
+  `check-shared-lib.sh`, and none is a shared UnixLib, libstdc++ or
+  libgcc_s. `examples/mixed` runs it before zipping.
+
+### One UnixLib, always
+
+A mixed program's UnixLib is the one linked into it. Its libraries must
+not bring their own: a second UnixLib would have its own heap, file table
+and signal handlers. Three checks keep it that way:
+
+1. **Building a library:** `check-shared-lib.sh` refuses one that needs a
+   shared UnixLib or defines UnixLib's functions.
+2. **Packaging:** `check-mixed-package.sh` follows every library the
+   program needs.
+3. **Running:** `crtmixed.o` looks at every library the loader has loaded.
+   If one is a shared UnixLib, libstdc++ or libgcc_s (say a library from
+   !SharedLibs, built by GCCSDK, was found instead of the app's own), the
+   program stops before `main` with a message naming it.
+
+Keep the app's libraries in its own `lib` directory: a library from
+!SharedLibs with the same SONAME may be built against a shared UnixLib.
+
+**Hidden symbols:** a library built with `-fvisibility=hidden` (GLib is)
+exports only what is marked for export. A variable the program sets in a
+library, such as GLib's `g_riscos_spawn_hooks`, needs
+`__attribute__((visibility("default")))`.
+
 ## Packaging
 
 `examples/mixed` builds `!MixHello`; copy it to start.
