@@ -13,5 +13,5 @@ mpclib3_1.2.1.orig.tar.gz 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6e
 # change set against GCCSDK's UnixLib, applied to the gccsdk tree.
 # The same release's PThreadTicker zip: its ReadMe and Licence go with the
 # module the build makes, and the build checks its module is the same.
-PThreadTicker-0.04.zip f0b76fb93b6aa0a9663529bdc192cd0ee74ef1231bef7904a0c5deead399c612 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.7-rc4/PThreadTicker-0.04.zip
-unixlib-riscos-5.0.3.7-rc4.diff f59443bf47d77399a87c84bbfe3ae9dac78c8a2ae68341c75504b6cc72938f60 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.7-rc4/unixlib-riscos.diff
+PThreadTicker-0.04.zip 8dabc3f0c8bb4099494bc77ad7388421215abc27f1e8fc9e7758e602a1ac77a0 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.7/PThreadTicker-0.04.zip
+unixlib-riscos-5.0.3.7.diff f59443bf47d77399a87c84bbfe3ae9dac78c8a2ae68341c75504b6cc72938f60 https://github.com/adyoull/riscos-unixlib/releases/download/v5.0.3.7/unixlib-riscos.diff
