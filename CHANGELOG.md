@@ -1,5 +1,26 @@
 # Changes
 
+## 1.11-test2 (test build, branch `mixed-link-test`)
+
+The toolchain is 1.11-test1's; `make prebuilt` builds the new parts.
+
+- **One UnixLib in a mixed program, always** (docs/MIXED.md):
+  - `crtmixed.o` stops the program before `main` if a library loaded a
+    real shared UnixLib, libstdc++ or libgcc_s;
+  - the new `checks/check-mixed-package.sh PROGRAM LIBDIR` checks an app's
+    libraries, and every name they need; `examples/mixed` runs it.
+- **Libraries built for fully shared programs** (GCCSDK's) work in a mixed
+  program, with its own UnixLib:
+  - empty stand-ins for `libunixlib.so.5`, `libstdc++.so.6`,
+    `libgcc_s.so.1` and `libm.so.1` (`lib/mixed-stubs`,
+    `$(RISCOS_MIXED_STUBS)`) go in the app's lib directory;
+  - `riscos-mixed-exports LIBS` gives the link options that export what
+    C++ libraries need (their names are versioned);
+  - `check-shared-lib.sh --stand-ins` accepts such libraries.
+- `RISCOS_MIXED_LDFLAGS` adds `-Wl,-rpath-link` to the stand-ins.
+- Tested on RISC OS on Linux: a static, a mixed, a fully shared and a
+  mixed C++ program running at once.
+
 ## 1.11-test1 (test build, branch `mixed-link-test`)
 
 - **Mixed programs** (docs/MIXED.md): UnixLib, libstdc++ and libgcc linked
