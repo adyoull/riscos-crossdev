@@ -6,7 +6,8 @@
 #   checks/check-shared-lib.sh [--stand-ins] LIBRARY.so...
 #
 # --stand-ins accepts a library built for fully shared programs (GCCSDK's,
-# say) that needs libunixlib.so.5, libstdc++.so.6 or libgcc_s.so.1: the
+# say) that needs libunixlib.so.5, libstdc++.so.6, libgcc_s.so.1 or
+# libm.so.1: the
 # app ships riscos-crossdev's stand-ins under those names, so it still
 # uses the program's UnixLib (docs/MIXED.md). Libraries you build yourself
 # don't need them.
@@ -28,7 +29,7 @@ for f in "$@"; do
   sys=$(echo "$dyn" | awk '/\(NEEDED\)/ {print $NF}' | tr -d '[]' | grep -E '^lib(unixlib|stdc\+\+|gcc_s|m|c|pthread)\.so' | tr '\n' ' ')
   via=
   if [ $stand_ins = 1 ] && [ -n "$sys" ]; then
-    rest=$(for n in $sys; do case $n in libunixlib.so.5|libstdc++.so.6|libgcc_s.so.1) ;; *) echo $n;; esac; done | tr '\n' ' ')
+    rest=$(for n in $sys; do case $n in libunixlib.so.5|libstdc++.so.6|libgcc_s.so.1|libm.so.1) ;; *) echo $n;; esac; done | tr '\n' ' ')
     [ -z "$rest" ] && { via=" (through the stand-ins for ${sys% })"; sys=; }
   fi
   own=$($RISCOS_HOST-nm -D --defined-only "$f" | awk '{print $3}' | grep -xE 'malloc|free|printf|__unixinit|_main|__main' | tr '\n' ' ')

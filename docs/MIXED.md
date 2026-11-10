@@ -70,8 +70,8 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
 - `checks/check-mixed-package.sh PROGRAM LIBDIR` checks a package: every
   library the program needs, directly or through another library, is in
   LIBDIR (as `libX.so.N` or `libX.so.N,e1f`) and passes
-  `check-shared-lib.sh`, and none is a shared UnixLib, libstdc++ or
-  libgcc_s. `examples/mixed` runs it before zipping.
+  `check-shared-lib.sh` (or is a stand-in, below), and every name the
+  libraries need is defined. `examples/mixed` runs it before zipping.
 
 ### One UnixLib, always
 
@@ -80,8 +80,8 @@ not bring their own: a second UnixLib would have its own heap, file table
 and signal handlers.
 
 **Libraries built for fully shared programs** (GCCSDK's, as in
-!SharedLibs) need `libunixlib.so.5`, and C++ ones `libstdc++.so.6` and
-`libgcc_s.so.1`. A mixed program can still use them, with its own UnixLib:
+!SharedLibs) need `libunixlib.so.5`, and C++ ones `libstdc++.so.6`,
+`libgcc_s.so.1` and `libm.so.1`. A mixed program can still use them, with its own UnixLib:
 
 - The toolchain has **stand-ins** under those names, in
   `$(RISCOS_MIXED_STUBS)` (`arm-riscos-gnueabihf/lib/mixed-stubs`). They
@@ -91,6 +91,17 @@ and signal handlers.
   loads the stand-in, and the library's calls go to the program's UnixLib,
   which the program exports. `-rdynamic` links in whatever UnixLib
   functions the libraries use, as well as the program's own.
+- **C++ libraries** ask for libstdc++'s names with versions
+  (`operator new@GLIBCXX_3.4`). Link the program with
+  `$(shell riscos-mixed-exports LIBS)` (the toolchain's `bin`): it lists
+  every name those libraries need, so the static libstdc++, libgcc and
+  UnixLib parts they use are linked in and exported. The loader matches
+  them by name.
+
+  ```make
+  $(RO_CXX) $(RISCOS_CFLAGS) -o prog main.o $(RISCOS_MIXED_LDFLAGS) \
+      $(shell riscos-mixed-exports libfoo.so) -L. -lfoo
+  ```
 - They're used only by this app. Other programs, fully shared ones
   included, still get the real shared UnixLib from !SharedLibs: SOManager
   tells libraries apart by their full path, not their name.
@@ -101,9 +112,10 @@ Three checks keep it to one UnixLib:
 
 1. **Building a library:** `check-shared-lib.sh` refuses one that needs a
    shared UnixLib or defines UnixLib's functions. With `--stand-ins` it
-   accepts one that needs only the three above.
+   accepts one that needs only the four above.
 2. **Packaging:** `check-mixed-package.sh` follows every library the
-   program needs, and says which stand-ins to copy in.
+   program needs, says which stand-ins to copy in, and checks that the
+   program or a library defines every name the libraries need.
 3. **Running:** `crtmixed.o` looks at every library the loader has loaded.
    If one is a real shared UnixLib, libstdc++ or libgcc_s (a stand-in was
    missing, so the one in !SharedLibs was found), the program stops before
@@ -112,11 +124,20 @@ Three checks keep it to one UnixLib:
 Keep all the app's libraries in its own `lib` directory: a library missing
 there would be looked for in !SharedLibs.
 
-Tested on RISC OS on Linux (QEMU): a library linked against
-`libunixlib.so.5` runs in a mixed program with the stand-in, using the
-program's `qsort`, `strtol`, `getpid`, `malloc` and `snprintf`. With a
-real `libunixlib.so.5` in its place, the program stops with the message.
-Not tested yet: a real GCCSDK C++ library (libstdc++'s symbol versions).
+Tested on RISC OS on Linux (QEMU, NativeSupport 0.33):
+
+- a C library linked against `libunixlib.so.5` runs in a mixed program
+  with the stand-in, using the program's `qsort`, `strtol`, `getpid`,
+  `malloc` and `snprintf`; with a real `libunixlib.so.5` in its place, the
+  program stops with the message;
+- a C++ library built as GCCSDK builds them (shared libstdc++, UnixLib,
+  libgcc_s, libm) runs in a mixed program with the stand-ins and
+  `riscos-mixed-exports`: strings, vectors, sorting, an exception caught
+  inside it, and exceptions it throws caught by the program;
+- **all at once**, each in its own task window: a static program, a mixed
+  one, a fully shared one (the real `libunixlib.so.5` from
+  !SharedLibs.lib.armeabihf) and the mixed C++ one, all with a thread, for
+  40 seconds. All finished correctly.
 
 **Hidden symbols:** a library built with `-fvisibility=hidden` (GLib is)
 exports only what is marked for export. A variable the program sets in a

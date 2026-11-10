@@ -1,0 +1,21 @@
+#!/bin/bash
+# riscos-mixed-exports LIBRARY.so...: linker options for a "mixed" program
+# (riscos-crossdev docs/MIXED.md) that uses libraries built for fully
+# shared programs (GCCSDK's). Such a library asks for versioned names
+# (operator new@GLIBCXX_3.4); the program's libstdc++ and UnixLib are
+# static and unversioned, so ld neither matches them nor links in the
+# ones only the library uses. This prints -Wl,--allow-shlib-undefined and
+# a -Wl,-u,NAME for each name the libraries need (nm doesn't show which
+# are versioned), so they are linked in and exported; the loader
+# (ld-riscos) matches by name. checks/check-mixed-package.sh then checks
+# that every name the libraries need is there.
+#   $(RO_CXX) ... $(RISCOS_MIXED_LDFLAGS) $(shell riscos-mixed-exports libfoo.so) -L. -lfoo
+# Installed in the toolchain's bin by toolchain/mixed/install.sh. MIT licence.
+set -euo pipefail
+nm=$(dirname "$0")/arm-riscos-gnueabihf-nm
+[ $# -gt 0 ] || { echo "usage: $0 LIBRARY.so..." >&2; exit 2; }
+syms=$(for f in "$@"; do "$nm" -D --undefined-only "$f"; done | awk '$1 == "U" { sub(/@.*/, "", $2); print $2 }' | sort -u)
+[ -n "$syms" ] || exit 0
+printf '%s' "-Wl,--allow-shlib-undefined"
+for s in $syms; do printf ' -Wl,-u,%s' "$s"; done
+echo

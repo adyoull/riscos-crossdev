@@ -4,7 +4,9 @@
 # directory, and each was built for mixed programs (check-shared-lib.sh).
 # A library built for fully shared programs (GCCSDK's) is accepted when the
 # directory has riscos-crossdev's stand-ins for the shared UnixLib,
-# libstdc++ and libgcc_s it needs (mixed-stubs/ in the toolchain).
+# libstdc++, libgcc_s and libm it needs (mixed-stubs/ in the toolchain).
+# Every name a library needs must then be exported by the program or
+# another of its libraries (riscos-mixed-exports, for GCCSDK's).
 #
 #   checks/check-mixed-package.sh PROGRAM LIBDIR
 #     PROGRAM  the program (ELF; stripped or not)
@@ -18,7 +20,7 @@
 # program stops at start-up if that happens: crtmixed.o checks.)
 . "$(dirname "$0")/../env.sh"
 [ $# -eq 2 ] && [ -f "$1" ] && [ -d "$2" ] || { echo "usage: $0 PROGRAM LIBDIR" >&2; exit 2; }
-prog=$1; dir=$2; bad=0
+prog=$1; dir=$2; bad=0; libs=
 stubs=$RISCOS_TOOLCHAIN/$RISCOS_HOST/lib/mixed-stubs
 needed() { $RISCOS_HOST-readelf -dW "$1" 2>/dev/null | awk '/\(NEEDED\)/ {print $NF}' | tr -d '[]'; }
 find_lib() { for f in "$dir/$1" "$dir/$1,e1f"; do [ -f "$f" ] && { echo "$f"; return 0; }; done; return 1; }
@@ -30,7 +32,7 @@ while [ -n "$queue" ]; do
   for n in $queue; do
     [ -n "${seen[$n]:-}" ] && continue; seen[$n]=1
     case $n in
-      libunixlib.so.5|libstdc++.so.6|libgcc_s.so.1)
+      libunixlib.so.5|libstdc++.so.6|libgcc_s.so.1|libm.so.1)
         if f=$(find_lib "$n") && $RISCOS_HOST-nm -D --defined-only "$f" 2>/dev/null | grep -qw __riscos_mixed_stub; then
           echo "  $n: the stand-in (the program's own is used)"
         else
@@ -41,6 +43,7 @@ while [ -n "$queue" ]; do
         echo "WRONG: $n is needed, and there's no stand-in for it: UnixLib, libstdc++ and libgcc must be linked into the program" >&2; bad=1; continue;;
     esac
     if f=$(find_lib "$n"); then
+      libs="$libs $f"
       "$(dirname "$0")/check-shared-lib.sh" --stand-ins "$f" >/dev/null 2>&1 || { "$(dirname "$0")/check-shared-lib.sh" --stand-ins "$f"; bad=1; }
       next="$next $(needed "$f")"
     else
@@ -49,5 +52,17 @@ while [ -n "$queue" ]; do
   done
   queue=$next
 done
+# Every name the libraries need (not weak) must be defined by the program
+# or one of them. __aeabi_unwind_cpp_pr* are only marked as needed: the
+# unwinder knows them by number, and nothing looks them up.
+if [ -n "$libs" ]; then
+  defs() { $RISCOS_HOST-nm -D --defined-only "$1" 2>/dev/null | awk '{print $3}' | sed 's/@.*//'; }
+  missing=$(comm -23 \
+    <(for f in $libs; do $RISCOS_HOST-nm -D --undefined-only "$f" | awk '$1 == "U" {print $2}'; done | sed 's/@.*//' | grep -v '^__aeabi_unwind_cpp_pr[0-2]$' | sort -u) \
+    <(for f in "$prog" $libs; do defs "$f"; done | sort -u))
+  if [ -n "$missing" ]; then
+    echo "WRONG: nothing in the program or its libraries defines $(echo $missing | wc -w) name(s) they need, e.g. $(echo $missing | cut -d' ' -f1-3): link the program with \$(shell riscos-mixed-exports LIBS) (docs/MIXED.md)" >&2; bad=1
+  fi
+fi
 [ $bad = 0 ] && echo "OK: $prog: all ${#seen[@]} libraries it needs are in $dir and use its UnixLib"
 exit $bad
