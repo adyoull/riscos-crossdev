@@ -34,7 +34,12 @@ RISCOS_LDFLAGS ?= -static
 #   library:  $(RO_CC) $(RISCOS_SO_CFLAGS) -c x.c
 #             $(RO_CC) $(RISCOS_SO_LDFLAGS) -Wl,-soname,libx.so.1 -o libx.so x.o $(RISCOS_SO_LIBS)
 #   program:  $(RO_CC) $(RISCOS_CFLAGS) main.c $(RISCOS_MIXED_LDFLAGS) -L. -lx
-RISCOS_MIXED_LDFLAGS ?= -rdynamic
+# A library built for fully shared programs (GCCSDK's) needs the shared
+# UnixLib: ship the stand-ins from RISCOS_MIXED_STUBS in the app's lib
+# directory (checks/check-mixed-package.sh says which). -rpath-link lets ld
+# find them when it links the program.
+RISCOS_MIXED_STUBS ?= $(RISCOS_TOOLCHAIN)/$(RISCOS_HOST)/lib/mixed-stubs
+RISCOS_MIXED_LDFLAGS ?= -rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)
 RISCOS_SO_CFLAGS ?= $(RISCOS_CFLAGS) -fPIC
 RISCOS_SO_LDFLAGS ?= -shared -nostdlib
 RISCOS_SO_LIBS ?= -lgcc

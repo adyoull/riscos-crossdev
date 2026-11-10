@@ -34,7 +34,8 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
 | `RISCOS_SO_CFLAGS` | `$(RISCOS_CFLAGS) -fPIC` | Library code that every program can share |
 | `RISCOS_SO_LDFLAGS` | `-shared -nostdlib` | A shared library, with no UnixLib, libstdc++ or libgcc of its own |
 | `RISCOS_SO_LIBS` | `-lgcc` | libgcc's helpers, private to the library (C++ libraries need its unwinder) |
-| `RISCOS_MIXED_LDFLAGS` | `-rdynamic` | Link the program dynamically, with UnixLib still linked in |
+| `RISCOS_MIXED_LDFLAGS` | `-rdynamic -Wl,-rpath-link=$(RISCOS_MIXED_STUBS)` | Link the program dynamically, with UnixLib still linked in |
+| `RISCOS_MIXED_STUBS` | the toolchain's `mixed-stubs` | Stand-ins for GCCSDK-built libraries (below) |
 
 - **What `-rdynamic` does:** with this toolchain it leaves the link
   dynamic (every other link gets `-static`).
@@ -76,19 +77,46 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
 
 A mixed program's UnixLib is the one linked into it. Its libraries must
 not bring their own: a second UnixLib would have its own heap, file table
-and signal handlers. Three checks keep it that way:
+and signal handlers.
+
+**Libraries built for fully shared programs** (GCCSDK's, as in
+!SharedLibs) need `libunixlib.so.5`, and C++ ones `libstdc++.so.6` and
+`libgcc_s.so.1`. A mixed program can still use them, with its own UnixLib:
+
+- The toolchain has **stand-ins** under those names, in
+  `$(RISCOS_MIXED_STUBS)` (`arm-riscos-gnueabihf/lib/mixed-stubs`). They
+  are empty libraries.
+- Put the ones needed in the app's `lib` directory, like its other
+  libraries (`lib.libunixlib/so/5`). The loader looks there first, so it
+  loads the stand-in, and the library's calls go to the program's UnixLib,
+  which the program exports. `-rdynamic` links in whatever UnixLib
+  functions the libraries use, as well as the program's own.
+- They're used only by this app. Other programs, fully shared ones
+  included, still get the real shared UnixLib from !SharedLibs: SOManager
+  tells libraries apart by their full path, not their name.
+- Nothing needs renaming: the program's UnixLib is linked in, so it has no
+  file or SONAME of its own.
+
+Three checks keep it to one UnixLib:
 
 1. **Building a library:** `check-shared-lib.sh` refuses one that needs a
-   shared UnixLib or defines UnixLib's functions.
+   shared UnixLib or defines UnixLib's functions. With `--stand-ins` it
+   accepts one that needs only the three above.
 2. **Packaging:** `check-mixed-package.sh` follows every library the
-   program needs.
+   program needs, and says which stand-ins to copy in.
 3. **Running:** `crtmixed.o` looks at every library the loader has loaded.
-   If one is a shared UnixLib, libstdc++ or libgcc_s (say a library from
-   !SharedLibs, built by GCCSDK, was found instead of the app's own), the
-   program stops before `main` with a message naming it.
+   If one is a real shared UnixLib, libstdc++ or libgcc_s (a stand-in was
+   missing, so the one in !SharedLibs was found), the program stops before
+   `main` with a message naming it.
 
-Keep the app's libraries in its own `lib` directory: a library from
-!SharedLibs with the same SONAME may be built against a shared UnixLib.
+Keep all the app's libraries in its own `lib` directory: a library missing
+there would be looked for in !SharedLibs.
+
+Tested on RISC OS on Linux (QEMU): a library linked against
+`libunixlib.so.5` runs in a mixed program with the stand-in, using the
+program's `qsort`, `strtol`, `getpid`, `malloc` and `snprintf`. With a
+real `libunixlib.so.5` in its place, the program stops with the message.
+Not tested yet: a real GCCSDK C++ library (libstdc++'s symbol versions).
 
 **Hidden symbols:** a library built with `-fvisibility=hidden` (GLib is)
 exports only what is marked for export. A variable the program sets in a

@@ -11,10 +11,13 @@
    entry points to), as ld-riscos's own dl_unwind.c does. The structure
    is ld-riscos/so/2's struct elf_resolve, up to the fields used here.
 
-   It also makes sure the program's own UnixLib is the only one: if any
-   library brought in a shared UnixLib, libstdc++ or libgcc_s (from
-   !SharedLibs, built for fully shared programs), the program stops at
-   once with a message naming it, instead of running with two C libraries.
+   It also makes sure the program's own UnixLib is the only one. A
+   library built for fully shared programs (GCCSDK's, in !SharedLibs)
+   needs libunixlib.so.5, libstdc++.so.6 or libgcc_s.so.1; the app's lib
+   directory holds empty stand-ins under those names (mixed-stubs/,
+   marked by __riscos_mixed_stub), so the library uses the program's
+   UnixLib. If a real one was loaded instead, the program stops at once
+   with a message naming it, rather than run with two C libraries.
 
    Installed by toolchain/mixed/install.sh. MIT licence. */
 typedef struct { int d_tag; union { unsigned d_val, d_ptr; } d_un; } Elf32_Dyn;
@@ -74,6 +77,23 @@ static const char *system_lib(const char *name)
   return NULL;
 }
 
+/* Is T one of the stand-ins (it defines __riscos_mixed_stub)? Its
+   dynamic_info holds unrelocated addresses, as in ld-riscos's hash.c. */
+typedef struct { unsigned st_name, st_value, st_size; unsigned char st_info, st_other; unsigned short st_shndx; } Elf32_Sym;
+#define DT_STRTAB 5
+#define DT_SYMTAB 6
+static int is_stub(const struct elf_resolve *t)
+{
+  if (!t->dynamic_info[DT_SYMTAB] || !t->dynamic_info[DT_STRTAB])
+    return 0;
+  const Elf32_Sym *sym = (const Elf32_Sym *) (t->loadaddr + t->dynamic_info[DT_SYMTAB]);
+  const char *str = t->loadaddr + t->dynamic_info[DT_STRTAB];
+  for (unsigned i = 1; i < t->nchain; i++)
+    if (sym[i].st_shndx && strcmp(str + sym[i].st_name, "__riscos_mixed_stub") == 0)
+      return 1;
+  return 0;
+}
+
 __attribute__((constructor(101))) static void crtmixed_one_unixlib(void)
 {
   if (!_DYNAMIC)
@@ -83,11 +103,12 @@ __attribute__((constructor(101))) static void crtmixed_one_unixlib(void)
       struct r_debug *r = (struct r_debug *) d->d_un.d_ptr;
       for (struct elf_resolve *t = r->r_map; t; t = t->next) {
         const char *what = t->libname ? system_lib(t->libname) : NULL;
+        if (what && is_stub(t))
+          continue;
         if (what) {
           fprintf(stderr, "This program has its own UnixLib, libstdc++ and libgcc, but one of its "
-                  "libraries also loaded a shared %s (%s). Every library it uses must be built "
-                  "for mixed programs (riscos-crossdev docs/MIXED.md) and be in its own lib "
-                  "directory.\n", what, t->libname);
+                  "libraries also loaded a shared %s (%s). Put riscos-crossdev's stand-ins "
+                  "(mixed-stubs) in the program's own lib directory (docs/MIXED.md).\n", what, t->libname);
           exit(1);
         }
       }
