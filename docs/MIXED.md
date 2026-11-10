@@ -45,6 +45,8 @@ $(RO_CC) $(RISCOS_CFLAGS) -o prog main.c $(RISCOS_MIXED_LDFLAGS) -L. -lgreet
   - `ld-riscos/so/2` becomes the program's interpreter.
   - `crtmixed.o` is linked in, so C++ exceptions can pass between a
     library and the program.
+- **A `-rdynamic` link needs at least one shared library on the line.**
+  Without one, binutils 2.30's ld crashes ("ld terminated with signal 11").
 - **Watch for builds that already pass `-rdynamic`** (some configure
   scripts and CMake's `ENABLE_EXPORTS` do). They now make a dynamic
   program. `checks/check-static.sh` says so: "dynamically linked but needs
