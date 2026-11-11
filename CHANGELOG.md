@@ -1,5 +1,21 @@
 # Changes
 
+## 1.11.3
+
+The toolchain is 1.11's. More of what ports found running mixed programs
+(docs/MIXED.md):
+
+- **Several library directories** in `LD_LIBRARY_PATH` are separated by
+  `;` (`/MyProgLibs:;/GTKLibs:;/MesaLibs:`). Tested by riscos-mesa; `:`
+  alone doesn't work.
+- **`!Run` sets a `WimpSlot`** big enough for the program. A big mixed
+  program started from the Filer without one stops with "Wimpslot not big
+  enough to run ELF program" (riscos-mesa). `examples/mixed`'s `!Run` now
+  sets one.
+- **Shared libraries must be ARM code:** `-fPIC` can't be assembled as
+  Thumb-2, so an application that must be Thumb-2 throughout can't be a
+  shared library.
+
 ## 1.11.2
 
 The toolchain is 1.11's. From riscos-mesa's shared builds of the devkit:

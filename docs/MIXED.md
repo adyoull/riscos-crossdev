@@ -67,6 +67,13 @@ $(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
   scripts and CMake's `ENABLE_EXPORTS` do). They now make a dynamic
   program. `checks/check-static.sh` says so: "dynamically linked but needs
   no shared library: drop -rdynamic".
+- **Shared libraries must be ARM code.** `-fPIC` code can't be built as
+  Thumb-2 (`-mthumb`): the assembler stops with "cannot represent
+  T32_OFFSET_IMM relocation", because RISC OS's scheme for finding a
+  library's data patches an ARM instruction when the library loads, and
+  has no Thumb-2 form. ARM is this compiler's default; don't add `-mthumb`
+  to a library. An application that must be Thumb-2 throughout can't
+  be a shared library.
 - **Don't link a library with `libunixlib.a`.** `-nodefaultlibs` keeps UnixLib
   out of it; with two copies there would be two heaps.
   `checks/check-shared-lib.sh` catches this, and libraries that aren't
@@ -205,13 +212,33 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
   programs built against the shared UnixLib.
 - **`!Run` tells the loader where they are.** The variable is named after
   the program's leaf name, or after the app (without the `!`) when the
-  program is `!RunImage`. A pack's directory goes after the app's own:
+  program is `!RunImage`:
 
   ```
   Set MixHelloLibs$Path <MixHello$Dir>.lib.
   Set mixhello$LD$Env "LD_LIBRARY_PATH=/MixHelloLibs:"
+  WimpSlot -min 1024K -max 1024K
   Run <MixHello$Dir>.mixhello
   ```
+
+- **Several directories are separated by `;`**, in the order they're
+  searched: the app's own first, then each pack.
+
+  ```
+  Set myprog$LD$Env "LD_LIBRARY_PATH=/MyProgLibs:;/GTKLibs:;/MesaLibs:"
+  ```
+
+  - riscos-mesa tested this on RISC OS on Linux. Separated by `:` alone
+    (`/MesaX:/MesaY:`), not even the first directory is searched.
+  - Don't make one path variable name both directories (`Both$Path X:,Y:`):
+    SOManager would register the libraries as `Both:…`, and they wouldn't
+    be shared with programs that use the pack's own name.
+- **Set a `WimpSlot` big enough for the program** before `Run`, as for an
+  Absolute file. The slot holds the program; UnixLib's heap is in a
+  dynamic area, and the libraries are in SOManager's. Started from the
+  Filer without one, a big program stops with "Wimpslot not big enough to
+  run ELF program" (riscos-mesa's tests use 16000K). `!MixHello` runs from
+  the Filer with 1024K.
 
   riscos-gtk's `!Geany` uses its pack like this (from its `!Run`, which
   runs on RISC OS 5 and RISC OS on Linux):
@@ -223,6 +250,7 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
   IfThere SharedLibs:lib.ld-riscos-eabihf/so Then Set Geany$SO2 1
   If "<Geany$SO2>" = "" Then Error The !SharedLibs booted has no ld-riscos/so/2: Geany needs a newer one (GCCSDK 8 or later) in !Boot.Resources.
   If "<GTKLibs$Dir>" = "" Then Error Geany needs !GTKLibs in !Boot.Resources
+  WimpSlot -min 10654K -max 10654K
   Set geany$LD$Env "LD_LIBRARY_PATH=/GTKLibs:"
   Run <Geany$Dir>.geany %*0
   ```
