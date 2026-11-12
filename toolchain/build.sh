@@ -98,10 +98,14 @@ unpack_gccsdk() {
   # program's libstdc++ even when the program is C. Only what they use is
   # linked in (riscos-gtk: harfbuzz in a C program).
   # (A space at the end of %{...} is dropped: it goes after the brace.)
-  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm}} -lunixlib }"|' \
+  # From 1.12 it links the whole of UnixLib, not only the parts in use,
+  # and exports it: a newer library pack can then use any UnixLib function
+  # without the program being relinked (riscos-mesa's libEGL gained
+  # strcspn). About 750 KB more per program.
+  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm --whole-archive -lunixlib --no-whole-archive}} -lunixlib }"|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   grep -q '%{pthread:-D_REENTRANT}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h &&
-    grep -q '%{rdynamic:%{!shared:-lstdc++ -lm}} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    grep -q '%{rdynamic:%{!shared:-lstdc++ -lm --whole-archive -lunixlib --no-whole-archive}} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
     { echo "couldn't add -pthread and the mixed libraries to GCCSDK's driver specs" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk

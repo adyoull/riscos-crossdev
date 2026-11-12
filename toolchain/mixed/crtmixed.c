@@ -19,6 +19,14 @@
    UnixLib. If a real one was loaded instead, the program stops at once
    with a message naming it, rather than run with two C libraries.
 
+   And it checks that every name each library needs is defined by the
+   program or a library. A library from a newer pack can need a UnixLib
+   function this program doesn't export (it was linked against the older
+   pack). ld-riscos would only find out when that code first runs, and
+   end the program there with a message to stderr, which a desktop
+   program doesn't show. So the program stops at the start instead, with
+   an error box naming the library and the name.
+
    Installed by toolchain/mixed/install.sh. MIT licence. */
 typedef struct { int d_tag; union { unsigned d_val, d_ptr; } d_un; } Elf32_Dyn;
 #define DT_NULL 0
@@ -94,6 +102,74 @@ static int is_stub(const struct elf_resolve *t)
   return 0;
 }
 
+/* Does T define NAME? Looked up through T's ELF hash table, as ld-riscos
+   does (hash.c: _dl_elf_hash, elf_buckets, chains). */
+#define SHN_UNDEF 0
+#define STB_WEAK 2
+static unsigned long elf_hash(const char *name)
+{
+  unsigned long h = 0, g;
+  while (*name) {
+    h = (h << 4) + (unsigned char) *name++;
+    if ((g = h & 0xf0000000))
+      h ^= g >> 24;
+    h &= ~g;
+  }
+  return h;
+}
+
+static int defines(const struct elf_resolve *t, const char *name, unsigned long h)
+{
+  if (!t->nbucket || !t->dynamic_info[DT_SYMTAB] || !t->dynamic_info[DT_STRTAB])
+    return 0;
+  const Elf32_Sym *sym = (const Elf32_Sym *) (t->loadaddr + t->dynamic_info[DT_SYMTAB]);
+  const char *str = t->loadaddr + t->dynamic_info[DT_STRTAB];
+  for (unsigned i = t->elf_buckets[h % t->nbucket]; i; i = t->chains[i])
+    if (sym[i].st_shndx != SHN_UNDEF && strcmp(str + sym[i].st_name, name) == 0)
+      return 1;
+  return 0;
+}
+
+/* The first name a loaded library needs that nothing defines, or NULL.
+   Weak names may stay undefined. __aeabi_unwind_cpp_pr0-2 are only marked
+   as needed: the unwinder knows them by number, and nothing looks them up. */
+static const char *unresolved(struct elf_resolve *map, const struct elf_resolve **who)
+{
+  for (const struct elf_resolve *t = map ? map->next : NULL; t; t = t->next) {
+    if (!t->dynamic_info[DT_SYMTAB] || !t->dynamic_info[DT_STRTAB])
+      continue;
+    const Elf32_Sym *sym = (const Elf32_Sym *) (t->loadaddr + t->dynamic_info[DT_SYMTAB]);
+    const char *str = t->loadaddr + t->dynamic_info[DT_STRTAB];
+    for (unsigned i = 1; i < t->nchain; i++) {
+      const char *name = str + sym[i].st_name;
+      if (sym[i].st_shndx != SHN_UNDEF || !*name || (sym[i].st_info >> 4) == STB_WEAK
+          || strncmp(name, "__aeabi_unwind_cpp_pr", 21) == 0)
+        continue;
+      unsigned long h = elf_hash(name);
+      const struct elf_resolve *d;
+      for (d = map; d; d = d->next)
+        if (defines(d, name, h))
+          break;
+      if (!d) {
+        *who = t;
+        return name;
+      }
+    }
+  }
+  return NULL;
+}
+
+#include <swis.h>
+static void stop(const char *text)
+{
+  /* stderr for a command-line program, an error box for a desktop one. */
+  fprintf(stderr, "%s\n", text);
+  struct { int errnum; char errmess[252]; } e = { 0, "" };
+  strncpy(e.errmess, text, sizeof e.errmess - 1);
+  _swix(Wimp_ReportError, _INR(0, 2), &e, 1, "Mixed program");
+  exit(1);
+}
+
 __attribute__((constructor(101))) static void crtmixed_one_unixlib(void)
 {
   if (!_DYNAMIC)
@@ -106,11 +182,21 @@ __attribute__((constructor(101))) static void crtmixed_one_unixlib(void)
         if (what && is_stub(t))
           continue;
         if (what) {
-          fprintf(stderr, "This program has its own UnixLib, libstdc++ and libgcc, but one of its "
-                  "libraries also loaded a shared %s (%s). Put riscos-crossdev's stand-ins "
-                  "(mixed-stubs) in its own lib directory, or its library pack (docs/MIXED.md).\n", what, t->libname);
-          exit(1);
+          char text[400];
+          snprintf(text, sizeof text, "This program has its own UnixLib, libstdc++ and libgcc, but one of its "
+                   "libraries also loaded a shared %s (%s). Put riscos-crossdev's stand-ins "
+                   "(mixed-stubs) in its own lib directory, or its library pack (docs/MIXED.md).", what, t->libname);
+          stop(text);
         }
+      }
+      const struct elf_resolve *who = NULL;
+      const char *name = unresolved(r->r_map, &who);
+      if (name) {
+        char text[400];
+        snprintf(text, sizeof text, "%s needs %s, which this program doesn't have: the library is newer "
+                 "than the program. Relink the program against it (riscos-crossdev docs/MIXED.md).",
+                 who->libname ? who->libname : "A library", name);
+        stop(text);
       }
     }
 }

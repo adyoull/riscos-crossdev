@@ -61,6 +61,14 @@ expect 0 "PThreadTicker 0.03 or later is in the toolchain" \
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
 expect 0 "UnixLib 5.0.2: -D_FILE_OFFSET_BITS=64 programs use the 64-bit calls" \
   sh -c "$RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T __unixlib_fstat64\$' && $RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T lseek64\$'"
+mkdir -p "$OUT/pk1" "$OUT/pk2" "$OUT/pk3"
+printf 'char *f(char *s) { return s; }\n' > "$OUT/pk1.c"
+printf '#include <string.h>\nunsigned f(char *s) { return strcspn(s, "x"); }\n' > "$OUT/pk2.c"
+printf 'extern int program_only(void);\nint f(void) { return program_only(); }\n' > "$OUT/pk3.c"
+for n in 1 2 3; do $CC -mfpu=vfpv3 -fPIC -shared -nodefaultlibs -Wl,-soname,libpk.so.1 -o "$OUT/pk$n/libpk.so.1" "$OUT/pk$n.c"; done
+expect 0 "pack imports: saved" "$HERE/check-pack-imports.sh" --save "$OUT/pklists" "$OUT/pk1"
+expect 0 "pack imports: a new UnixLib name is only a note" "$HERE/check-pack-imports.sh" "$OUT/pklists" "$OUT/pk2"
+expect 1 "pack imports: a new name from outside UnixLib is reported" "$HERE/check-pack-imports.sh" "$OUT/pklists" "$OUT/pk3"
 expect 1 "unaligned: the bad cast is reported" "$HERE/check-unaligned.sh" "$S/castalign.c"
 printf '%s\n' '# checked by hand' 'castalign\.c:.*uint32_t bad \(' > "$OUT/safe.txt"
 expect 0 "unaligned: a safe list hides it" "$HERE/check-unaligned.sh" -s "$OUT/safe.txt" "$S/castalign.c"

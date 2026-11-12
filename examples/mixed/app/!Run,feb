@@ -8,5 +8,5 @@ Set MixHelloLibs$Path <MixHello$Dir>.lib.
 Set mixhello$LD$Env "LD_LIBRARY_PATH=/MixHelloLibs:"
 | The slot holds the program (UnixLib's heap is in a dynamic area, the
 | libraries in SOManager's): big enough for it, as for an Absolute file
-WimpSlot -min 1024K -max 1024K
+WimpSlot -min 2048K -max 2048K
 Run <MixHello$Dir>.mixhello
