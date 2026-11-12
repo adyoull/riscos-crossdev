@@ -55,6 +55,10 @@ $(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
   - `ld-riscos/so/2` becomes the program's interpreter.
   - `crtmixed.o` is linked in, so C++ exceptions can pass between a
     library and the program.
+  - **All of UnixLib is linked in** and exported (from 1.12), not only the
+    parts the program and its libraries use. A newer library pack can then
+    use any UnixLib function without the program being relinked. It costs
+    about 750 KB per program: set the `WimpSlot` to match.
   - libstdc++ is linked in too, even into a C program, as `g++` does: a
     library may be C++ (riscos-gtk's harfbuzz is). Only what the libraries
     use is linked in.
@@ -161,10 +165,16 @@ Three checks keep it to one UnixLib:
 2. **Packaging:** `check-mixed-package.sh` follows every library the
    program needs, says which stand-ins to copy in, and checks that the
    program or a library defines every name the libraries need.
-3. **Running:** `crtmixed.o` looks at every library the loader has loaded.
-   If one is a real shared UnixLib, libstdc++ or libgcc_s (a stand-in was
-   missing, so the one in !SharedLibs was found), the program stops before
-   `main` with a message naming it.
+3. **Running:** `crtmixed.o` looks at every library the loader has loaded,
+   before `main`:
+   - if one is a real shared UnixLib, libstdc++ or libgcc_s (a stand-in was
+     missing, so the one in !SharedLibs was found), the program stops with
+     a message naming it;
+   - from 1.12, if a library needs a name that neither the program nor a
+     library defines, the program stops with a message naming the library
+     and the name (an error box in the desktop). Without this, ld-riscos
+     would only find out when that code first ran, and end the program
+     there with a message to stderr that a desktop program doesn't show.
 
 Keep every library the program needs in the directories on its
 `LD_LIBRARY_PATH` (below): a library missing there would be looked for in
@@ -184,6 +194,25 @@ Tested on RISC OS on Linux (QEMU, NativeSupport 0.33):
   one, a fully shared one (the real `libunixlib.so.5` from
   !SharedLibs.lib.armeabihf) and the mixed C++ one, all with a thread, for
   40 seconds. All finished correctly.
+
+### Updating a library pack
+
+A program exports only what it was linked with. So a new version of a
+pack mustn't need anything from the program that the old version didn't,
+or programs linked against the old version stop (at start-up, saying
+which library needs which name). riscos-mesa found this when a new libEGL
+needed `strcspn`.
+
+- **New UnixLib functions** are fine for programs linked by 1.12 or later,
+  which export the whole of UnixLib. Programs linked by 1.11.x must be
+  relinked.
+- **Anything else** (libstdc++, libgcc, the program's own names) needs
+  every program relinked. For a compatible update, give the library its
+  own copy instead (hidden), or make it a new SONAME.
+- **`checks/check-pack-imports.sh`** checks it. Save each release's lists
+  with `--save LISTDIR PACKDIR`; then `check-pack-imports.sh LISTDIR
+  PACKDIR` on the next version says what each library newly needs, with a
+  NOTE for UnixLib names and WRONG for the rest.
 
 **Hidden symbols:** a library built with `-fvisibility=hidden` (GLib is)
 exports only what is marked for export. A variable the program sets in a
@@ -217,7 +246,7 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
   ```
   Set MixHelloLibs$Path <MixHello$Dir>.lib.
   Set mixhello$LD$Env "LD_LIBRARY_PATH=/MixHelloLibs:"
-  WimpSlot -min 1024K -max 1024K
+  WimpSlot -min 2048K -max 2048K
   Run <MixHello$Dir>.mixhello
   ```
 
@@ -237,8 +266,9 @@ library, such as GLib's `g_riscos_spawn_hooks`, needs
   Absolute file. The slot holds the program; UnixLib's heap is in a
   dynamic area, and the libraries are in SOManager's. Started from the
   Filer without one, a big program stops with "Wimpslot not big enough to
-  run ELF program" (riscos-mesa's tests use 16000K). `!MixHello` runs from
-  the Filer with 1024K.
+  run ELF program" (riscos-mesa's tests use 16000K). The whole of UnixLib
+  is in the program (from 1.12), so allow about 1 MB for it beyond the
+  program's own code; `!MixHello` uses 2048K.
 
   riscos-gtk's `!Geany` uses its pack like this (from its `!Run`, which
   runs on RISC OS 5 and RISC OS on Linux):

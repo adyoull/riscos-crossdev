@@ -46,11 +46,12 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.11.3 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.12 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
-1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5), 1.10 (UnixLib 5.0.3.6) and
-1.11 (UnixLib 5.0.3.7) have their own; 1.11.1 to 1.11.3 use 1.11's.
+1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5), 1.10 (UnixLib 5.0.3.6),
+1.11 (UnixLib 5.0.3.7) and 1.12 (UnixLib 5.0.3.9) have their own;
+1.11.1 to 1.11.3 use 1.11's.
 
 **Prebuilt** (a few minutes):
 
@@ -60,7 +61,7 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.11-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.12-x86_64-linux.tar.xz`.
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
 
@@ -92,7 +93,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.11
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.12
 make prebuilt       # installs there
 ```
 
@@ -129,7 +130,7 @@ script that adds `-rdynamic` itself makes a mixed program:
 
 For OpenGL (OSMesa), EGL, OpenGL ES, GLU, SDL2, freeglut, OpenAL and zlib,
 use the riscos-mesa devkit. Each version of riscos-crossdev names the one
-it's tested with in `devkit/DEVKIT` (1.11 to 1.11.3: **20.3.5-18**, VFPv3 like the
+it's tested with in `devkit/DEVKIT` (1.11 to 1.12: **20.3.5-18**, VFPv3 like the
 toolchain), with its sha256:
 
 ```sh

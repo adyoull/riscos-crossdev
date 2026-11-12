@@ -1,5 +1,29 @@
 # Changes
 
+## 1.12
+
+- **A new toolchain, 1.12, with UnixLib 5.0.3.9** (was 5.0.3.7), from
+  riscos-unixlib:
+  - `lseek` past the end of a file no longer extends it (SQLite's "file
+    is not a database" on new databases);
+  - mmap with `PROT_NONE` or `PROT_READ` no longer aborts with
+    ARMEABISupport 1.08;
+  - `__pthread_vfp_reclaim()` in `<unixlib/local.h>`, for Thumb programs
+    to call after Wimp_Poll;
+  - no struct or argument changes: relink to pick them up.
+- **Mixed programs link the whole of UnixLib** and export it, not only the
+  parts in use, so a newer library pack can use any UnixLib function
+  without the program being relinked. About 750 KB more per program;
+  `examples/mixed`'s WimpSlot is now 2048K.
+- **`crtmixed.o` checks at start-up that every name a library needs is
+  defined.** A library newer than the program (riscos-mesa's libEGL
+  needing `strcspn`) made the program end silently when that code first
+  ran; now it stops at once with an error box naming the library and the
+  name.
+- **`checks/check-pack-imports.sh`:** compares a new version of a library
+  pack with saved lists for the old one, and says what it newly needs
+  from programs (docs/MIXED.md, "Updating a library pack").
+
 ## 1.11.3
 
 The toolchain is 1.11's. More of what ports found running mixed programs

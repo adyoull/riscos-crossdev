@@ -25,7 +25,7 @@ back into a filetype.
   toolchain (UnixLib 5.0.3.1 and later) use version 0.03 or later. The
   toolchain has 0.04 in `toolchain/env/riscos/PThrTicker,ffa`, with its
   ReadMe and Licence (the same module as PThreadTicker-0.04.zip on the
-  riscos-unixlib v5.0.3.7 release; 0.04 only changes its error number).
+  riscos-unixlib v5.0.3.9 release; 0.04 only changes its error number).
   Ship it in your app and `RMLoad` it from `!Run`, as its ReadMe shows.
   Without it, or with an older version loaded, UnixLib runs its own copy,
   which also works.
