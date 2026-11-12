@@ -61,6 +61,10 @@ expect 0 "PThreadTicker 0.03 or later is in the toolchain" \
 $CC -mfpu=vfpv3 -fstack-clash-protection -static -D_FILE_OFFSET_BITS=64 -o "$OUT/largefile" "$S/largefile.c"
 expect 0 "UnixLib 5.0.2: -D_FILE_OFFSET_BITS=64 programs use the 64-bit calls" \
   sh -c "$RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T __unixlib_fstat64\$' && $RISCOS_HOST-nm '$OUT/largefile' | grep -q ' T lseek64\$'"
+printf '#include <string.h>\nsize_t strcspn(const char *s, const char *r) { return 0; }\n' > "$OUT/clash.c"
+$CC -mfpu=vfpv3 -fPIC -shared -nodefaultlibs -Wl,-soname,libclash.so.1 -o "$OUT/libclash.so" "$OUT/clash.c"
+expect 0 "shared lib: its own copy of a UnixLib function is warned about" \
+  sh -c "'$HERE/check-shared-lib.sh' '$OUT/libclash.so' 2>&1 | grep -q 'WARNING: .* exports its own strcspn'"
 mkdir -p "$OUT/pk1" "$OUT/pk2" "$OUT/pk3"
 printf 'char *f(char *s) { return s; }\n' > "$OUT/pk1.c"
 printf '#include <string.h>\nunsigned f(char *s) { return strcspn(s, "x"); }\n' > "$OUT/pk2.c"

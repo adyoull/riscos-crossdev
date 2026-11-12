@@ -77,7 +77,7 @@ them in the environment (or on the `make` command line) to override.
 |---|---|
 | `checks/check-all.sh PROGRAM.elf [LIB.a...]` | Any of static, stack probes, FPU or UnixLib below fails (libraries: FPU only) |
 | `checks/check-static.sh PROGRAM.elf...` | The program needs a shared library (a mixed program, docs/MIXED.md, may need its own libraries, but not a shared UnixLib, libstdc++ or libgcc) |
-| `checks/check-shared-lib.sh [--stand-ins] LIBRARY.so...` | A mixed program's library isn't PIC, has its own UnixLib, or needs a shared UnixLib, libstdc++, libgcc_s or libm (`--stand-ins`: unless the stand-ins cover it) |
+| `checks/check-shared-lib.sh [--stand-ins] LIBRARY.so...` | A mixed program's library isn't PIC, has its own UnixLib, or needs a shared UnixLib, libstdc++, libgcc_s or libm (`--stand-ins`: unless the stand-ins cover it). Warns if it exports its own copy of a UnixLib or libstdc++ function |
 | `checks/check-pack-imports.sh [--save] LISTDIR PACKDIR` | A new version of a library pack needs a name from programs that the saved lists for the old one didn't (UnixLib names: a note) |
 | `checks/check-mixed-package.sh PROGRAM LIBDIR...` | A library a mixed program needs, directly or not, isn't in LIBDIR (its `LD_LIBRARY_PATH`), isn't built for mixed programs, needs a stand-in that isn't there, or needs a name nothing defines |
 | `checks/check-stack-probes.py PROGRAM.elf [OBJDUMP]` | A frame of 4 KB or more doesn't probe its stack |

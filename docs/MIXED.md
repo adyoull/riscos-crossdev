@@ -59,6 +59,14 @@ $(call RISCOS_SO_FROM_A,libx.so,libx.so.1,libx.a,-L. -lgreet)
     parts the program and its libraries use. A newer library pack can then
     use any UnixLib function without the program being relinked. It costs
     about 750 KB per program: set the `WimpSlot` to match.
+    - `-no-whole-unixlib` on the link turns it off for one program (only
+      what's used is linked in, as in 1.11).
+    - As on Linux, the loader looks in the program first, so a library
+      that exports its own copy of a UnixLib function (a private
+      `strcspn`, say) gets UnixLib's instead. `check-shared-lib.sh` warns
+      about it; make the library's copy hidden (`static`, or
+      `-fvisibility=hidden`). riscos-gtk's `!GTKLibs` 3.24.52-20 and
+      riscos-mesa's `!MesaLibs` 20.3.5-19j have none.
   - libstdc++ is linked in too, even into a C program, as `g++` does: a
     library may be C++ (riscos-gtk's harfbuzz is). Only what the libraries
     use is linked in.

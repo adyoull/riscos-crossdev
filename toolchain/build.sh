@@ -91,6 +91,8 @@ unpack_gccsdk() {
   # work. The driver rejected it before.
   grep -qx pthread gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt ||
     printf '\npthread\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
+  grep -qx no-whole-unixlib gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt ||
+    printf '\nno-whole-unixlib\nDriver\n' >> gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos.opt
   sed -i 's|^  " %{!munaligned-access:-mno-unaligned-access}" \\$|&\n  " %{pthread:-D_REENTRANT}" \\|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   # A mixed program (-rdynamic) also links libstdc++ and libm, as g++ does:
@@ -101,11 +103,12 @@ unpack_gccsdk() {
   # From 1.12 it links the whole of UnixLib, not only the parts in use,
   # and exports it: a newer library pack can then use any UnixLib function
   # without the program being relinked (riscos-mesa's libEGL gained
-  # strcspn). About 750 KB more per program.
-  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm --whole-archive -lunixlib --no-whole-archive}} -lunixlib }"|' \
+  # strcspn). About 750 KB more per program. -no-whole-unixlib turns it
+  # off for one program (a driver option; nothing passes -n... options on).
+  sed -i 's|^  "%{!nostdlib:-lunixlib }"$|  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm %{!no-whole-unixlib:--whole-archive -lunixlib --no-whole-archive}}} -lunixlib }"|' \
     gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h
   grep -q '%{pthread:-D_REENTRANT}' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h &&
-    grep -q '%{rdynamic:%{!shared:-lstdc++ -lm --whole-archive -lunixlib --no-whole-archive}} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
+    grep -q '%{rdynamic:%{!shared:-lstdc++ -lm %{!no-whole-unixlib:--whole-archive -lunixlib --no-whole-archive}}} -lunixlib' gccsdk/autobuilder/develop/gcc/gcc.config.arm.riscos-gnueabihf.h ||
     { echo "couldn't add -pthread and the mixed libraries to GCCSDK's driver specs" >&2; exit 1; }
 }
 [ -d gccsdk ] || unpack_gccsdk

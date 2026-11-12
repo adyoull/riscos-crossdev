@@ -14,7 +14,11 @@
 - **Mixed programs link the whole of UnixLib** and export it, not only the
   parts in use, so a newer library pack can use any UnixLib function
   without the program being relinked. About 750 KB more per program;
-  `examples/mixed`'s WimpSlot is now 2048K.
+  `examples/mixed`'s WimpSlot is now 2048K. `-no-whole-unixlib` turns it
+  off for one program.
+  - `check-shared-lib.sh` warns if a library exports its own copy of a
+    UnixLib or libstdc++ function, which the program's would now replace.
+    `!GTKLibs` 3.24.52-20 and `!MesaLibs` 20.3.5-19j have none.
 - **`crtmixed.o` checks at start-up that every name a library needs is
   defined.** A library newer than the program (riscos-mesa's libEGL
   needing `strcspn`) made the program end silently when that code first
