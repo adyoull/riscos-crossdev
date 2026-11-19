@@ -17,11 +17,14 @@ for f in bin/arm-riscos-gnueabihf-gcc bin/elf2aif bin/qemu-arm-aligntrap BUILDIN
          arm-riscos-gnueabihf/lib/libunixlib.a arm-riscos-gnueabihf/lib/crtmixed.o; do
   [ -e "$P/$f" ] || { echo "missing $P/$f: run toolchain/gcc16/build.sh" >&2; exit 1; }
 done
-# No build paths in what ships (the .la files name the prefix).
+# No build paths in what ships, except where the default toolchain's
+# tarball has them too and they do no harm: the linker scripts' SEARCH_DIR
+# (the driver passes its own -L), GCC's install-tools and the gdb helper.
+# The .la files name the prefix: libtool doesn't need them here.
 find "$P" -name '*.la' -delete
-if grep -rlI --exclude=BUILDINFO.txt -e "$RCD_DIR" -e /opt/gcc16 "$P" | grep -v '/plugin/include/' | head -1 | grep -q .; then
-  echo "package.sh: build paths in:"; grep -rlI -e "$RCD_DIR" -e /opt/gcc16 "$P" | grep -v '/plugin/include/' | head; exit 1
-fi
+leaks=$(grep -rlI --exclude=BUILDINFO.txt -e "$P" -e "$RCD_DIR" "$P" |
+        grep -vE '/ldscripts/|/install-tools/|-gdb\.py$|/plugin/include/' || true)
+[ -z "$leaks" ] || { echo "package.sh: build paths in:"; echo "$leaks" | head; exit 1; }
 sed -i "1s/.*/riscos-crossdev toolchain gcc16 $VERSION (optional; $(uname -m) Linux host)/" "$P/BUILDINFO.txt"
 mkdir -p "$OUT"
 tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$(date +%s)" \

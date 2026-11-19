@@ -104,6 +104,13 @@ if [ "$WHAT" = all ] || [ "$WHAT" = finish ]; then
   cp -a "$BASE"/riscos/. "$P/riscos/"
   for f in elf2aif qemu-arm-aligntrap; do cp -a "$BASE/bin/$f" "$P/bin/"; done
   "$TCDIR"/mixed/install.sh "$P"
+  # The host programs (cc1plus is ~380 MB with its debug information): strip
+  # them, as the default toolchain's are built without it. Only x86-64 ELF
+  # files: the target libraries keep theirs.
+  find "$P/bin" "$P/libexec" "$P/$T/bin" -type f | while read -r f; do
+    [ "$(od -An -tx1 -j18 -N2 "$f" 2>/dev/null | tr -d ' ')" = 3e00 ] &&
+      [ "$(od -An -c -j1 -N3 "$f" | tr -d ' ')" = ELF ] && strip --strip-unneeded "$f"
+  done
   # Stack probes are the target default (riscos-gcc16's patch), as the
   # default toolchain's libraries are built with them.
   printf 'extern void use(char *);\nvoid f(void) { char b[8192]; use(b); }\n' > probe.c
