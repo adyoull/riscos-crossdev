@@ -26,7 +26,7 @@ expect 1 "FPU: VFPv4 code fails"    "$HERE/check-fpu.sh" "$OUT/fma4.o"
 expect 0 "FPU: the toolchain's own libraries are VFPv3" "$HERE/check-fpu.sh" \
   "$RISCOS_TOOLCHAIN"/arm-riscos-gnueabihf/lib/libunixlib.a \
   "$RISCOS_TOOLCHAIN"/arm-riscos-gnueabihf/lib/libstdc++.a \
-  "$RISCOS_TOOLCHAIN"/lib/gcc/arm-riscos-gnueabihf/10.2.0/libgcc.a
+  "$($CC -print-libgcc-file-name)"
 expect 0 "FPU: an unstripped VFPv3 program passes" "$HERE/check-fpu.sh" "$OUT/probed"
 $RISCOS_HOST-strip -o "$OUT/probed.stripped" "$OUT/probed"
 expect 2 "FPU: a stripped program is refused (its data would read as code)" \

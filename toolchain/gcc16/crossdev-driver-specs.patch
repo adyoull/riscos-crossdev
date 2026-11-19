@@ -1,0 +1,49 @@
+--- a/gcc/config/arm/riscos-gnueabihf.h
++++ b/gcc/config/arm/riscos-gnueabihf.h
+@@ -52,9 +52,13 @@
+   fprintf (STREAM, "\tbl\t__gnu_mcount_nc\n");	\
+ }
+ 
++/* riscos-crossdev (as its GCC 10.2 toolchain, 1.11/1.12): -pthread links
++   libpthread (UnixLib has the threads; libpthread.a is empty); a mixed
++   program (-rdynamic) also links libstdc++ and libm, and the whole of
++   UnixLib, exported, unless -no-whole-unixlib.  */
+ #undef  LIB_SPEC
+ #define LIB_SPEC \
+-  "%{!nostdlib:-lunixlib }"
++  "%{!nostdlib:%{pthread:-lpthread} %{rdynamic:%{!shared:-lstdc++ -lm %{!no-whole-unixlib:--whole-archive -lunixlib --no-whole-archive}}} -lunixlib }"
+   
+ #define DYNAMIC_LINKER "ld-riscos/so/2"
+ #define RISCOS_ABI "armeabihf"
+@@ -107,6 +111,8 @@
+   RISCOS_MODULE_SELF_SPEC,						   \
+   " %{mfpu=neon:%{!mfloat-abi=*:-mfloat-abi=hard} %{!mcpu=*:-mcpu=cortex-a8}}"   \
+   " %{!munaligned-access:-mno-unaligned-access}" \
++  " %{!shared:%{!static:%{!r:%{!mmodule:%{!rdynamic:-static}}}}}" \
++  " %{pthread:-D_REENTRANT}" \
+   MCPU_MTUNE_NATIVE_SPECS,			\
+   TARGET_MODE_SPECS,				\
+   MULTILIB_ARCH_CANONICAL_SPECS,		\
+@@ -116,6 +122,7 @@
+ #undef STARTFILE_SPEC
+ #define STARTFILE_SPEC	" %{mmodule:;:crti.o%s" \
+ 			" %{!shared:%{pg:gcrt0.o%s;:crt0.o%s}}" \
++			" %{rdynamic:%{!shared:%{!static:crtmixed.o%s}}}" \
+ 			" %{shared:crtbeginS.o%s;:crtbegin.o%s}}"
+ 
+ #undef ENDFILE_SPEC
+--- a/gcc/config/arm/riscos.opt
++++ b/gcc/config/arm/riscos.opt
+@@ -42,3 +42,12 @@
+ mapcs-32
+ Target Ignore
+ Accepted and ignored (APCS-32 is the only ABI: GCCSDK 4.7.4 Makefiles name it)
++
++rdynamic
++Driver
++
++pthread
++Driver
++
++no-whole-unixlib
++Driver
