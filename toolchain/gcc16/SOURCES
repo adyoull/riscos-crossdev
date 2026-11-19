@@ -1,0 +1,8 @@
+# The optional GCC 16 toolchain's sources: file, sha256, URL (toolchain/fetch.sh
+# with SOURCES_FILE=toolchain/gcc16/SOURCES). GMP, MPFR and MPC are the default
+# toolchain's (toolchain/SOURCES), built in GCC's tree.
+gcc-16.2.0.tar.xz e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz
+binutils-2.45.1.tar.xz 5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5 https://ftp.gnu.org/gnu/binutils/binutils-2.45.1.tar.xz
+gmp_6.2.1+dfsg.orig.tar.xz c6ba08e3f079260ab90ff44ab8801eae134cd62cd78f4aa56317c0e70daa40cb https://archive.ubuntu.com/ubuntu/pool/main/g/gmp/gmp_6.2.1+dfsg.orig.tar.xz
+mpfr4_4.1.0.orig.tar.xz 0c98a3f1732ff6ca4ea690552079da9c597872d30e96ec28414ee23c95558a7f https://archive.ubuntu.com/ubuntu/pool/main/m/mpfr4/mpfr4_4.1.0.orig.tar.xz
+mpclib3_1.2.1.orig.tar.gz 17503d2c395dfcf106b622dc142683c1199431d095367c6aacba6eec30340459 https://archive.ubuntu.com/ubuntu/pool/main/m/mpclib3/mpclib3_1.2.1.orig.tar.gz

@@ -1,5 +1,22 @@
 # Changes
 
+## Unreleased
+
+- **An optional GCC 16.2.0 toolchain** (binutils 2.45.1), for ports that
+  need a newer compiler (C++23: WebKitGTK 2.46 and later). **GCC 10.2 stays
+  the default**; nothing changes for a port that doesn't choose it.
+  [docs/GCC16.md](docs/GCC16.md).
+  - It's a separate tarball (`riscos-crossdev-toolchain-gcc16-…`), used by
+    pointing `RISCOS_TOOLCHAIN` at it, or built with
+    `toolchain/gcc16/build.sh`.
+  - It links the same UnixLib 5.0.3.9 as the default toolchain, built by
+    GCC 10.2.
+  - The RISC OS patches to GCC, libstdc++ and binutils are Rob Heaton's,
+    from riscos-gcc16. `toolchain/gcc16/crossdev-driver-specs.patch` gives
+    it 1.12's driver: static by default, mixed programs, `-pthread`.
+- `toolchain/fetch.sh` takes another source list (`SOURCES_FILE`).
+- `checks/selftest.sh` asks the compiler where libgcc.a is.
+
 ## 1.12
 
 - **A new toolchain, 1.12, with UnixLib 5.0.3.9** (was 5.0.3.7), from

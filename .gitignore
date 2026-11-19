@@ -9,6 +9,8 @@ CLAUDE.md
 toolchain/dl/
 toolchain/work/
 toolchain/env/
+toolchain/env-gcc16/
+toolchain/work-gcc16/
 devkit/dl/
 devkit/env/
 devkit/env.old/
