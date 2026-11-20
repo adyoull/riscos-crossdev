@@ -1,0 +1,42 @@
+--- a/gcc/config/arm/arm.cc
++++ b/gcc/config/arm/arm.cc
+@@ -471,6 +471,9 @@
+ #undef TARGET_REGISTER_MOVE_COST
+ #define TARGET_REGISTER_MOVE_COST arm_register_move_cost
+ 
++#undef TARGET_CALLEE_SAVE_COST
++#define TARGET_CALLEE_SAVE_COST arm_callee_save_cost
++
+ #undef TARGET_MEMORY_MOVE_COST
+ #define TARGET_MEMORY_MOVE_COST arm_memory_move_cost
+ 
+@@ -35888,6 +35891,29 @@
+ #undef TARGET_DOCUMENTATION_NAME
+ #define TARGET_DOCUMENTATION_NAME "ARM"
+ 
++/* Implement TARGET_CALLEE_SAVE_COST.  The core registers r4-r11 are saved
++   and restored by the one PUSH/POP (STMDB/LDMIA) that a function's
++   prologue and epilogue use anyway: as soon as anything is saved (the
++   link register, in any non-leaf function), each further core register is
++   one more register in that instruction, not a separate store or load.
++   Cost it so (1, which is still more than not saving it), as aarch64 does
++   for turning an STR into an STP.  Without this, the default (a separate
++   store or load) makes the allocator prefer spilling values that live
++   across calls to the stack over using r8-r11 in Thumb-2.  */
++static int
++arm_callee_save_cost (spill_cost_type spill_type, unsigned int regno,
++		      machine_mode mode, unsigned int nregs, int mem_cost,
++		      const HARD_REG_SET &callee_saved_regs,
++		      bool existing_spills_p)
++{
++  if (TARGET_32BIT
++      && regno <= LAST_ARM_REGNUM
++      && !optimize_function_for_size_p (cfun))
++    return nregs;
++  return default_callee_save_cost (spill_type, regno, mode, nregs, mem_cost,
++				   callee_saved_regs, existing_spills_p);
++}
++
+ struct gcc_target targetm = TARGET_INITIALIZER;
+ 
+ /* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */

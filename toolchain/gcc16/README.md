@@ -18,6 +18,14 @@ unless `RISCOS_TOOLCHAIN` points at it.
   behaviour: static links by default, mixed programs (`-rdynamic`,
   crtmixed.o, the whole of UnixLib exported, `-no-whole-unixlib`) and
   `-pthread`.
+- `crossdev-arm-callee-save-cost.patch` fixes a GCC 16 regression on ARM
+  (upstream GCC 16 does it too): GCC 16's register allocator gained a cost
+  hook for saving callee-saved registers, which AArch64 and x86 implement and
+  ARM doesn't, so ARM got the generic cost (a separate store and load per
+  register). In Thumb-2 that made it spill values that live across calls to
+  the stack rather than use r8-r11. The patch costs a core register as one
+  more register in the PUSH/POP the function does anyway, as AArch64 does
+  for pairs.
 - UnixLib is riscos-crossdev's own (riscos-unixlib), **not** riscos-gcc16's:
   the GCC 16 toolchain links the same `libunixlib.a` as the default
   toolchain, built by GCC 10.2 (the C ABI is the same).

@@ -11,6 +11,10 @@
     `toolchain/gcc16/build.sh`.
   - It links the same UnixLib 5.0.3.9 as the default toolchain, built by
     GCC 10.2.
+  - A fix for GCC 16's register allocation in Thumb-2
+    (`toolchain/gcc16/crossdev-arm-callee-save-cost.patch`): without it,
+    GCC 16 spilled values across calls to the stack instead of using r8-r11,
+    and C++ ran 5-15% slower than with GCC 10 (WebKit's JavaScriptCore).
   - The RISC OS patches to GCC, libstdc++ and binutils are Rob Heaton's,
     from riscos-gcc16. `toolchain/gcc16/crossdev-driver-specs.patch` gives
     it 1.12's driver: static by default, mixed programs, `-pthread`.

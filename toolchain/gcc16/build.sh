@@ -71,7 +71,7 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
   ( cd gcc-16.2.0
     for p in "$HERE"/patches/*.patch "$HERE"/patches-cxx/*.patch; do patch -p1 -l -s < "$p"; done
     cp -r "$HERE"/new-files/* "$HERE"/new-files-cxx/* .
-    patch -p1 -s < "$HERE"/crossdev-driver-specs.patch
+    for p in "$HERE"/crossdev-*.patch; do patch -p1 -s < "$p"; done
     ( cd libstdc++-v3 && PATH=/usr/bin:/bin autoconf2.69 -f )
     tar xf "$DL"/gmp_6.2.1+dfsg.orig.tar.xz && mv gmp-6.2.1* gmp
     tar xf "$DL"/mpfr4_4.1.0.orig.tar.xz && mv mpfr-4.1.0* mpfr
