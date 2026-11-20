@@ -1,0 +1,21 @@
+--- a/libstdc++-v3/include/bits/hashtable_policy.h
++++ b/libstdc++-v3/include/bits/hashtable_policy.h
+@@ -279,7 +279,17 @@
+     {
+       static constexpr size_t
+       __small_size_threshold() noexcept
+-      { return std::__is_fast_hash<_Hash>::value ? 0 : 20; }
++      {
++#ifdef __riscos__
++	// riscos-crossdev: always hash (with the cached hash codes), as
++	// GCC 10's libstdc++ did. Scanning up to 20 elements with key
++	// comparisons made std::unordered_map<std::string, T> lookups in
++	// small tables 17% slower on a Raspberry Pi 4 (Cortex-A72).
++	return 0;
++#else
++	return std::__is_fast_hash<_Hash>::value ? 0 : 20;
++#endif
++      }
+     };
+ 
+   /**

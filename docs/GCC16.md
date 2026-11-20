@@ -60,6 +60,24 @@ GCC 10.2 for now.
   `-mcpu=cortex-a8`. With `-march=armv7-a` as well, both compilers warn that
   the two conflict. The code is still built for `-march`.
 
+## Speed
+
+GCC 16 made some C++ slower than GCC 10 on 32-bit ARM. This toolchain fixes
+the slowdowns found so far (see `toolchain/gcc16/README.md`). On a
+Raspberry Pi 4, test programs shaped like WebKit's JavaScriptCore (a
+parser, hash-table lookups, virtual calls, recursive marking, strings,
+sorting) now run as fast as with GCC 10.2 or faster.
+
+One deliberate difference from GCC's defaults: recursive functions are
+inlined at most 2 levels deep, not 8 (`--param=max-inline-recursive-depth=N`
+and `--param=max-inline-recursive-depth-auto=N` change it).
+
+## libatomic
+
+Atomics on objects that the CPU can't update in one go (bigger than 8
+bytes, e.g. `std::atomic<std::optional<double>>`) call libatomic: link with
+`-latomic`, as on Linux. CMake's and meson's atomics checks find it.
+
 ## Tested
 
 - **On RISC OS** (RISC OS 5.31 in QEMU):

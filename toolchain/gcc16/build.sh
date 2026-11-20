@@ -77,9 +77,11 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
     tar xf "$DL"/mpfr4_4.1.0.orig.tar.xz && mv mpfr-4.1.0* mpfr
     tar xf "$DL"/mpclib3_1.2.1.orig.tar.gz && mv mpc-1.2.1* mpc )
   # (configure can't run these tests when cross compiling: as the default
-  # toolchain and riscos-gcc16 do)
+  # toolchain and riscos-gcc16 do; and no IFUNCs for libatomic: UnixLib's
+  # static start-up doesn't run their resolvers)
   export ac_cv_func_shl_load=no ac_cv_lib_dld_shl_load=no ac_cv_func_dlopen=yes \
-         glibcxx_cv_c99_math_tr1=yes glibcxx_cv_c99_math_funcs=yes
+         glibcxx_cv_c99_math_tr1=yes glibcxx_cv_c99_math_funcs=yes \
+         libat_cv_have_ifunc=no
   mkdir gcc-build; cd gcc-build
   # Keep build paths out of the libraries' debug information.
   TFLAGS="-O2 -g -fdebug-prefix-map=$TC=/riscos-crossdev"
@@ -87,7 +89,7 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
     --enable-languages=c,c++,lto --enable-lto --disable-shared --enable-static \
     --enable-threads=posix --enable-sjlj-exceptions=no --enable-__cxa_atexit --enable-c99 \
     --enable-cmath --disable-libstdcxx-pch --disable-wchar_t --disable-libquadmath --disable-nls --disable-tls \
-    --disable-libssp --disable-libgomp --disable-libitm --disable-libatomic --disable-libsanitizer \
+    --disable-libssp --disable-libgomp --disable-libitm --enable-libatomic --disable-libsanitizer \
     --disable-libvtv --disable-libcc1 --disable-multilib --disable-bootstrap \
     --with-pkgversion='riscos-crossdev GCC 16.2.0' \
     --with-bugurl=https://github.com/adyoull/riscos-crossdev/issues \

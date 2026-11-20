@@ -1,0 +1,14 @@
+--- a/libatomic/configure.tgt
++++ b/libatomic/configure.tgt
+@@ -57,6 +57,11 @@
+ 	case "${target}" in
+             arm*-*-freebsd* | arm*-*-netbsd*)
+                 ;;
++            arm*-*-riscos*)
++                # riscos-crossdev: programs are linked statically and
++                # UnixLib's start-up doesn't run IFUNC resolvers.
++                try_ifunc=no
++                ;;
+             *)
+                 # ??? Detect when -march=armv7 is already enabled.
+                 try_ifunc=yes

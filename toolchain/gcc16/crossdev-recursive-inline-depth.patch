@@ -1,0 +1,24 @@
+--- a/gcc/config/arm/riscos-gnueabihf.h
++++ b/gcc/config/arm/riscos-gnueabihf.h
+@@ -226,3 +226,21 @@
+ #define DIR_SEPARATOR '/'
+ 
+ #endif /* ! CROSS_DIRECTORY_STRUCTURE */
++
++/* riscos-crossdev: inline recursive functions at most 2 levels deep (GCC's
++   default is 8). At -O3 GCC 16 inlines recursive functions, and cycles of
++   them, into themselves and then into their callers: a recursive-descent
++   parser grew from ~700 to ~4600 instructions and ran 11% slower than GCC
++   10's on a Raspberry Pi 4 (Cortex-A72); depth 2 ran 7% faster than GCC
++   10's, and depth 4 or more was slow. Recursive C++ (regular expression
++   matchers, parsers, garbage collectors' marking) is common in the large
++   programs this toolchain builds. --param=max-inline-recursive-depth=N
++   and --param=max-inline-recursive-depth-auto=N still set it.  */
++#undef SUBTARGET_OVERRIDE_OPTIONS
++#define SUBTARGET_OVERRIDE_OPTIONS					\
++  do {									\
++    SET_OPTION_IF_UNSET (&global_options, &global_options_set,		\
++			 param_max_inline_recursive_depth, 2);		\
++    SET_OPTION_IF_UNSET (&global_options, &global_options_set,		\
++			 param_max_inline_recursive_depth_auto, 2);	\
++  } while (0)

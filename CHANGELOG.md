@@ -11,6 +11,14 @@
     `toolchain/gcc16/build.sh`.
   - It links the same UnixLib 5.0.3.9 as the default toolchain, built by
     GCC 10.2.
+  - **Measured on a Raspberry Pi 4** against GCC 10.2, test programs shaped
+    like WebKit's JavaScriptCore run as fast or faster with it. Three
+    GCC 16 slowdowns are fixed (`toolchain/gcc16/README.md`): deep
+    recursive inlining (recursive code 11% slower; now 6% faster),
+    `std::to_string` copying a 201-byte table per call (2.4 times slower;
+    now 1.4 times faster), and `std::unordered_map` scanning small tables
+    (string lookups 17% slower; now level).
+  - libatomic (`-latomic`) for atomics on objects larger than 8 bytes.
   - A fix for GCC 16's register allocation in Thumb-2
     (`toolchain/gcc16/crossdev-arm-callee-save-cost.patch`): without it,
     GCC 16 spilled values across calls to the stack instead of using r8-r11,

@@ -1,0 +1,44 @@
+--- a/libstdc++-v3/include/bits/charconv.h
++++ b/libstdc++-v3/include/bits/charconv.h
+@@ -75,6 +75,27 @@
+ 	}
+     }
+ 
++  // riscos-crossdev: the two-digit table lives once, in read-only data.
++  // As a local constexpr array (GCC 16 dropped its "static" so that the
++  // function can be constexpr) it was copied onto the stack, 201 bytes by
++  // memcpy, on every call: std::to_string ran 2.4 times slower than GCC 10's
++  // on a Raspberry Pi 4. A static constexpr data member can be read in
++  // constant expressions in every C++ mode.
++  template<typename _Tp = void>
++    struct __to_chars_10_digits
++    {
++      static constexpr char __table[201] =
++	"0001020304050607080910111213141516171819"
++	"2021222324252627282930313233343536373839"
++	"4041424344454647484950515253545556575859"
++	"6061626364656667686970717273747576777879"
++	"8081828384858687888990919293949596979899";
++    };
++#if __cplusplus < 201703L
++  template<typename _Tp>
++    constexpr char __to_chars_10_digits<_Tp>::__table[201];
++#endif
++
+   // Write an unsigned integer value to the range [first,first+len).
+   // The caller is required to provide a buffer of exactly the right size
+   // (which can be determined by the __to_chars_len function).
+@@ -86,12 +107,7 @@
+       static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
+ #endif
+ 
+-      constexpr char __digits[201] =
+-	"0001020304050607080910111213141516171819"
+-	"2021222324252627282930313233343536373839"
+-	"4041424344454647484950515253545556575859"
+-	"6061626364656667686970717273747576777879"
+-	"8081828384858687888990919293949596979899";
++      constexpr const char* __digits = __to_chars_10_digits<>::__table;
+       unsigned __pos = __len - 1;
+       while (__val >= 100)
+ 	{
