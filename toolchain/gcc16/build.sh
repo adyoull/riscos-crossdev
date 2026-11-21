@@ -47,6 +47,11 @@ sysroot() {
   for f in crt0.o gcrt0.o libc.a libm.a libpthread.a libunixlib.a libdl.a; do
     cp -a "$BASE/$T/lib/$f" "$P/$T/lib/"
   done
+  # Word data word-aligned (the default toolchain's UnixLib from 1.13 on;
+  # 1.12's aborted at start-up on a Pi in some programs).
+  python3 -I "$TCDIR/../checks/check-data-align.py" "$P/$T/lib/libunixlib.a" \
+      "$P/$T/lib/crt0.o" "$P/$T/lib/gcrt0.o" >/dev/null ||
+    { echo "build.sh: the default toolchain's UnixLib has under-aligned data: use riscos-crossdev 1.13 or later" >&2; exit 1; }
 }
 
 if [ "$WHAT" = all ] || [ "$WHAT" = binutils ]; then

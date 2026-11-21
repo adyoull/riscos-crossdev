@@ -58,6 +58,22 @@ unpack_gccsdk() {
   # in 5.0.3.6: semaphores (sem_timedwait, a blocking sem_wait, sem_post in
   # signal handlers).
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
+  # Word data must be word-aligned (riscos-crossdev 1.13). Several of
+  # UnixLib's assembler files start .data with no alignment directive, so
+  # the object's .data has alignment 1 and the linker may put it at any
+  # byte address: in Groove 0.2 to 0.4.2 UnixLib's own start-up then read
+  # __riscosify_control_internal from an address ending in 6 and aborted
+  # on a Pi with alignment exceptions on, the RISC OS 5 default (Geofrey
+  # Baxendale's report; found by the Groove port). RISC OS on Linux doesn't
+  # check alignment. A .balign 4 after every bare .data (in crt0.s and
+  # gcrt0.s too) costs at most 3 bytes of padding each. checks/
+  # check-data-align.py checks the result after the build.
+  n=$(grep -rlE '^[[:space:]]*\.data[[:space:]]*(@.*)?$' --include='*.s' --include='*.S' \
+        gccsdk/gcc4/recipe/files/gcc/libunixlib | wc -l)
+  grep -rlE '^[[:space:]]*\.data[[:space:]]*(@.*)?$' --include='*.s' --include='*.S' \
+      gccsdk/gcc4/recipe/files/gcc/libunixlib |
+    xargs -r sed -i -E 's/^([[:space:]]*)\.data[[:space:]]*(@.*)?$/&\n\1.balign 4/'
+  [ "$n" -ge 8 ] || { echo "UnixLib's .data alignment fix found only $n files (expected 8 or more)" >&2; exit 1; }
   # Static only (riscos-crossdev 1.3). RISC OS programs are linked
   # statically; GCCSDK's shared libraries need !SharedLibs' ELF loader. A
   # link without -static used to pick libunixlib.so, libstdc++.so and libm.so
@@ -157,6 +173,14 @@ TFLAGS="-g -O2 -fstack-clash-protection -fdebug-prefix-map=$TC=/riscos-crossdev"
 # $RISCOS_TOOLCHAIN/riscos, with the ReadMe and Licence from the release's
 # zip: threaded programs ship it and RMLoad it from !Run. UnixLib's own
 # install doesn't copy it. It must be byte for byte the release's module.
+# UnixLib's data sections, and crt0's, must be word-aligned (see the .data
+# fix in unpack_gccsdk).
+check_unixlib_align() {
+  python3 -I "$HERE/../checks/check-data-align.py" "$RISCOS_TOOLCHAIN/$T/lib/libunixlib.a" \
+    "$RISCOS_TOOLCHAIN/$T/lib/crt0.o" "$RISCOS_TOOLCHAIN/$T/lib/gcrt0.o" ||
+    { echo "UnixLib has under-aligned data sections" >&2; exit 1; }
+}
+
 install_pthticker() {
   local m=$TC/gcc-10.2.0/cross-build/$T/libunixlib/pthticker z=$TC/pthticker-zip
   [ -s "$m" ] || { echo "no $m: UnixLib's build didn't make the module" >&2; exit 1; }
@@ -180,6 +204,7 @@ if [ "$WHAT" = unixlib ]; then
   make configure-target-libunixlib all-target-libunixlib > "$TC"/unixlib-make.log 2>&1
   make install-target-libunixlib > "$TC"/unixlib-install.log 2>&1
   install_pthticker
+  check_unixlib_align
   exit 0
 fi
 
@@ -228,6 +253,7 @@ if [ "$WHAT" = all ] || [ "$WHAT" = gcc ]; then
   make -j"$JOBS" > "$TC"/gcc-make.log 2>&1
   make install > "$TC"/gcc-install.log 2>&1
   install_pthticker
+  check_unixlib_align
   cd "$TC"
 fi
 

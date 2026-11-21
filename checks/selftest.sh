@@ -76,5 +76,17 @@ expect 1 "pack imports: a new name from outside UnixLib is reported" "$HERE/chec
 expect 1 "unaligned: the bad cast is reported" "$HERE/check-unaligned.sh" "$S/castalign.c"
 printf '%s\n' '# checked by hand' 'castalign\.c:.*uint32_t bad \(' > "$OUT/safe.txt"
 expect 0 "unaligned: a safe list hides it" "$HERE/check-unaligned.sh" -s "$OUT/safe.txt" "$S/castalign.c"
+$CC -c -o "$OUT/misaligned.o" "$S/misaligned.s"
+$CC -mfpu=vfpv3 -static -o "$OUT/usebad" "$OUT/misaligned.o" "$S/usebad.c"
+expect 1 "data alignment: a word at an odd address in a program is reported" \
+  python3 "$HERE/check-data-align.py" "$OUT/usebad"
+expect 0 "data alignment: a C program is aligned" python3 "$HERE/check-data-align.py" "$OUT/probed"
+expect 1 "data alignment: a byte-aligned data section in an object is reported" \
+  python3 "$HERE/check-data-align.py" "$OUT/misaligned.o"
+expect 0 "data alignment: --fix raises its alignment" \
+  sh -c "python3 '$HERE/check-data-align.py' --fix '$OUT/misaligned.o' '$OUT/fixed.o' && python3 '$HERE/check-data-align.py' '$OUT/fixed.o'"
+expect 0 "data alignment: the toolchain's UnixLib and start files (1.12 and earlier fail)" \
+  python3 "$HERE/check-data-align.py" "$RISCOS_TOOLCHAIN/$RISCOS_HOST/lib/libunixlib.a" \
+    "$RISCOS_TOOLCHAIN/$RISCOS_HOST/lib/crt0.o" "$RISCOS_TOOLCHAIN/$RISCOS_HOST/lib/gcrt0.o"
 [ $fails = 0 ] && echo "checks selftest passed"
 exit $fails

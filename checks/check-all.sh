@@ -1,6 +1,8 @@
 #!/bin/bash
 # Run every check on a linked RISC OS program (the unstripped ELF):
-# static linking, stack probes, FPU level and UnixLib consistency. The unaligned-access
+# static linking, stack probes, FPU level, UnixLib consistency and data
+# alignment (word data on word boundaries: a Pi with alignment exceptions on
+# aborts otherwise). The unaligned-access
 # check works on sources instead (checks/check-unaligned.sh).
 #
 #   checks/check-all.sh PROGRAM.elf [LIBRARY.a ...]
@@ -16,5 +18,6 @@ echo "-- static";       "$HERE/check-static.sh" "$ELF" || rc=1
 echo "-- stack probes"; python3 "$HERE/check-stack-probes.py" "$ELF" || rc=1
 echo "-- FPU level";    "$HERE/check-fpu.sh" "$@" || rc=1
 echo "-- UnixLib";      "$HERE/check-unixlib.sh" "$ELF" || rc=1
+echo "-- data alignment"; python3 "$HERE/check-data-align.py" "$ELF" || rc=1
 [ $rc = 0 ] && echo "all checks passed: $ELF" || echo "CHECKS FAILED: $ELF"
 exit $rc
