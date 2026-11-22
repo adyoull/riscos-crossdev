@@ -1,0 +1,4 @@
+# The optional GCC 16 toolchain of this release: file, sha256, URL. Unpack it
+# anywhere and point RISCOS_TOOLCHAIN at it (docs/GCC16.md); the default
+# toolchain is toolchain/PREBUILT's.
+riscos-crossdev-toolchain-gcc16-1.13-x86_64-linux.tar.xz d8add9a49cf06c8f668b1b861e596cfc7209b90458bafbf9fc7ac87a6bf3b356 https://github.com/adyoull/riscos-crossdev/releases/download/v1.13/riscos-crossdev-toolchain-gcc16-1.13-x86_64-linux.tar.xz
