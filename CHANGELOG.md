@@ -1,7 +1,26 @@
 # Changes
 
-## Unreleased
+## 1.13
 
+- **Programs no longer risk aborting at start-up on a Pi.** UnixLib's
+  assembler gave some of its word data (and crt0's) no alignment, so
+  where the linker put it depended on the program. In some programs a
+  word ended up at an odd address, and UnixLib's own start-up aborted
+  ("abort on data transfer") on RISC OS 5 with alignment exceptions on,
+  the normal setting on a Pi. RISC OS on Linux doesn't check, so it never
+  showed there. Reported by Geofrey Baxendale on the ROOL forum (Groove
+  wouldn't start); found by the Groove port.
+  - **Every program built with 1.12 or earlier could be affected**, by
+    chance, depending on its link. Groove and YTDL are; others were lucky.
+    **Rebuild with 1.13.**
+  - The toolchain build adds `.balign 4` after every bare `.data` in
+    UnixLib's assembler (13 places, `crt0.s` and `gcrt0.s` among them), and
+    checks the result. Nothing else in UnixLib changes.
+  - **`checks/check-data-align.py`:** a new check, run by `check-all.sh` on
+    every program. It wants word data on word boundaries in a program, and
+    word-aligned data sections in a library or object (`--fix` mends one).
+    It's based on the Groove port's tools.
+- **A new toolchain, 1.13, with UnixLib 5.0.3.10**, from riscos-unixlib.
 - **An optional GCC 16.2.0 toolchain** (binutils 2.45.1), for ports that
   need a newer compiler (C++23: WebKitGTK 2.46 and later). **GCC 10.2 stays
   the default**; nothing changes for a port that doesn't choose it.
@@ -9,7 +28,7 @@
   - It's a separate tarball (`riscos-crossdev-toolchain-gcc16-…`), used by
     pointing `RISCOS_TOOLCHAIN` at it, or built with
     `toolchain/gcc16/build.sh`.
-  - It links the same UnixLib 5.0.3.9 as the default toolchain, built by
+  - It links the same UnixLib 5.0.3.10 as the default toolchain, built by
     GCC 10.2.
   - **Measured on a Raspberry Pi 4** against GCC 10.2, test programs shaped
     like WebKit's JavaScriptCore run as fast or faster with it. Three
@@ -21,8 +40,10 @@
   - libatomic (`-latomic`) for atomics on objects larger than 8 bytes.
   - A fix for GCC 16's register allocation in Thumb-2
     (`toolchain/gcc16/crossdev-arm-callee-save-cost.patch`): without it,
-    GCC 16 spilled values across calls to the stack instead of using r8-r11,
-    and C++ ran 5-15% slower than with GCC 10 (WebKit's JavaScriptCore).
+    GCC 16 spilled values across calls to the stack instead of using r8-r11
+    (2-3% on call-heavy code).
+  - WebKit's JavaScriptCore runs Octane as fast as with GCC 10 on a Pi 4
+    (RegExp 4.6% faster), measured by the web browser port.
   - The RISC OS patches to GCC, libstdc++ and binutils are Rob Heaton's,
     from riscos-gcc16. `toolchain/gcc16/crossdev-driver-specs.patch` gives
     it 1.12's driver: static by default, mixed programs, `-pthread`.

@@ -38,7 +38,7 @@ repositories your project is built with:
 
 ```
 # NAME TAG: repositories at github.com/adyoull, at a release tag
-riscos-crossdev v1.12
+riscos-crossdev v1.13
 riscos-mesa v20.3.5-17
 riscos-ffmpeg v5.1.10-riscos22
 ```

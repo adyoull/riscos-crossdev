@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.3.6, the PThreadTicker module and elf2aif.
+# binutils 2.30, UnixLib 5.0.3.10, the PThreadTicker module and elf2aif.
 # Static linking only: there are no shared target libraries, and links are
 # static by default.
 #
