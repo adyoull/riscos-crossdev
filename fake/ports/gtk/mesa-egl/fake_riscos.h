@@ -65,6 +65,10 @@ extern int fake_watch[4], fake_watch_value, fake_watch_hits;
      FAKE_NULL = a null event
    then Close_Window_Request.
    fake_wimp_hook, if set, is called before each Poll returns (a frame). */
+/* Wimp_OpenWindow's extended (nested) syntax: how many, and the last one's
+   window, parent (R3) and nesting flags (R4); Wimp_AddMessages' messages */
+extern int fake_nested_opens, fake_nested_window, fake_nested_parent, fake_nested_flags;
+extern int fake_added_messages[16], fake_added_messages_len;
 extern int fake_sprite_plot_converts, fake_fills;
 extern int fake_target_window;           /* scripted events go here (0 = newest window) */
 /* Mouse_Click's icon handle (-1); the icon bar icon made (Wimp_CreateIcon):
@@ -93,6 +97,9 @@ int fake_wimp_script_pos(void);          /* script entry last returned, -1 befor
 #define FAKE_SCRIPT_MAX 8192
 extern int fake_wimp_nulls, fake_wimp_script[FAKE_SCRIPT_MAX][4], fake_wimp_script_len;
 extern int fake_wimp_polls, fake_wimp_keys_passed, fake_wimp_tasks;
+/* the last Wimp_Poll(Idle)'s mask and R3; PollWord_NonZero returns (a set
+   poll word, mask bit 22, reason 13 not masked) */
+extern int fake_poll_mask, fake_poll_r3, fake_pollword_returns;
 extern void (*fake_wimp_hook)(int reason);
 /* Called for SWIs the fake doesn't know; returns 1 if it handled the SWI
    (setting *e for an error), 0 for "SWI not faked". */
@@ -111,6 +118,7 @@ extern int fake_wimp_desktop;           /* Wimp_ReadSysInfo 0 reports a desktop 
    OS_Byte 106 calls (pointer on/off) and the internal keys held down
    (OS_Byte 121) */
 extern int fake_pointer[3], fake_wheel, fake_menus_opened, fake_pointer_shape;
+extern int fake_vdu24;                 /* graphics windows set (VDU 24) */
 extern const int *fake_menu;            /* the open Wimp_CreateMenu block (NULL = none) */
 extern int fake_menu_x, fake_menu_y, fake_menus_closed;
 extern unsigned char fake_keys_down[128];

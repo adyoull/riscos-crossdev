@@ -31,6 +31,8 @@ int fake_update_rect[4];
 int fake_vsyncs, fake_update_calls, fake_redraw_calls, fake_plots;
 int fake_sprite_creates;
 int fake_force_redraws, fake_force_rect[5], fake_scaled_plots;
+int fake_nested_opens, fake_nested_window, fake_nested_parent, fake_nested_flags;
+int fake_added_messages[16], fake_added_messages_len;
 int fake_wimp_nulls, fake_wimp_script[FAKE_SCRIPT_MAX][4], fake_wimp_script_len;
 int fake_pointer[3], fake_wheel, fake_menus_opened, fake_pointer_shape = 1;
 const int *fake_menu;
@@ -64,6 +66,7 @@ int fake_new_ref(void)
 unsigned char fake_keys_down[128];
 int fake_log_menus;
 static int wimp_null_due, fake_wimp_title_window;
+int fake_poll_mask, fake_poll_r3, fake_pollword_returns;
 int fake_wimp_polls, fake_wimp_keys_passed, fake_wimp_tasks;
 void (*fake_wimp_hook)(int reason);
 int (*fake_swi_hook)(int no, _kernel_swi_regs *r, _kernel_oserror **e);
@@ -93,6 +96,7 @@ static const unsigned int wimp_palette_tbgr[16] = {
     0x994400, 0x00EEEE, 0x00CC00, 0x0000DD, 0xBBEEEE, 0x008855, 0x00BBFF, 0xFFBB00 };
 int fake_fills;
 static int clip[4];                  /* graphics window, OS units x0,y0,x1,y1 (excl.) */
+int fake_vdu24;                       /* VDU 24s (OS_WriteN) */
 
 /* A 32bpp mode selector like OS_ScreenMode 1 would return. */
 static int screen_selector[16];
@@ -1066,6 +1070,12 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
         break;
     case 0x400C5:   /* Wimp_OpenWindow */
         block = (int *) (long) r.r[1];
+        if (r.r[2] == 0x4B534154) {      /* extended: nested (R3 parent, -1 top level; R4 flags) */
+            fake_nested_opens++;
+            fake_nested_window = block[0];
+            fake_nested_parent = r.r[3];
+            fake_nested_flags = r.r[4];
+        }
         if (!fake_open_window(block[0], block[1], block[2], block[3], block[4], block[5], block[6]))
             e = error("too many windows");
         break;
@@ -1084,6 +1094,11 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
         }
         break;
     }
+    case 0x400F6: { /* Wimp_AddMessages: 0-terminated list */
+        const int *m = (const int *) (long) r.r[0];
+        while (*m && fake_added_messages_len < 16) fake_added_messages[fake_added_messages_len++] = *m++;
+        break;
+    }
     case 0x400D2:   /* Wimp_SetCaretPosition */
         break;
     case 0x400DC:   /* Wimp_ProcessKey: a key the task didn't use */
@@ -1097,6 +1112,17 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
         block = (int *) (long) r.r[1];
         memset(block, 0, 64);
         fake_wimp_polls++;
+        fake_poll_mask = r.r[0];
+        fake_poll_r3 = r.r[3];
+        if ((r.r[0] & (1 << 22)) && !(r.r[0] & (1 << 13)) && r.r[3] &&
+            *(volatile int *) (long) r.r[3] != 0) {
+            /* the task's poll word is set: PollWord_NonZero first */
+            block[0] = r.r[3];
+            block[1] = *(volatile int *) (long) r.r[3];
+            fake_pollword_returns++;
+            r.r[0] = 13;
+            break;
+        }
         if (wimp_stage == 0) { reason = 1; block[0] = wimp_last_window; wimp_stage = 1; }
         else if (wimp_stage == 1 && wimp_step < fake_wimp_nulls && !(r.r[0] & 1)) {
             reason = 0; wimp_step++;
@@ -1244,6 +1270,13 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
         block[3] = window_at_pointer(); block[4] = -1;
         break;
     case 0x400D4:   /* Wimp_CreateMenu */
+        /* a new menu tree closes the old one, a dialogue box opened as a
+           menu with it */
+        if (r.r[1] != -1 && fake_menu_window && r.r[1] != fake_menu_window) {
+            fake_window_t *mw = find_window(fake_menu_window);
+            if (mw) mw->handle = 0;
+            fake_menu_window = 0;
+        }
         if (r.r[1] == -1 && fake_menu_window) {    /* a dialogue box opened as a menu */
             fake_window_t *mw = find_window(fake_menu_window);
             if (mw) mw->handle = 0;
@@ -1296,6 +1329,16 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
     case 0x400E6:   /* Wimp_SetColour */
         wimp_colour = r.r[0] & 15;
         break;
+    case 0x46: {    /* OS_WriteN: VDU 24 (graphics window) only */
+        const unsigned char *v = (const unsigned char *) (long) r.r[0];
+        if (r.r[1] == 9 && v[0] == 24) {
+            int g[4], i;
+            for (i = 0; i < 4; i++) g[i] = (short) (v[1 + 2 * i] | (v[2 + 2 * i] << 8));
+            clip[0] = g[0]; clip[1] = g[1]; clip[2] = g[2] + 1; clip[3] = g[3] + 1;
+            fake_vdu24++;
+        } else e = error("OS_WriteN: only VDU 24 is faked");
+        break;
+    }
     case 0x45: {    /* OS_Plot: 4 move, 101 rectangle fill (absolute, inclusive) */
         if (r.r[0] == 4) { plot_x = r.r[1]; plot_y = r.r[2]; break; }
         if (r.r[0] == 101) {
