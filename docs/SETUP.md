@@ -46,12 +46,12 @@ If apt says `gcc-arm-linux-gnueabihf` has unmet dependencies, install
 
 ## 2. The toolchain
 
-Use a tagged release of this repo (`git clone -b v1.13 ...`). Each tag names
+Use a tagged release of this repo (`git clone -b v1.14 ...`). Each tag names
 one toolchain tarball and its sha256 in `toolchain/PREBUILT`. When a
 release doesn't change the toolchain, it keeps the previous one's tarball:
 1.5 to 1.8.3 use 1.4's; 1.9 (UnixLib 5.0.3.5), 1.10 (UnixLib 5.0.3.6),
-1.11 (UnixLib 5.0.3.7), 1.12 (UnixLib 5.0.3.9) and 1.13 (UnixLib 5.0.3.10)
-have their own;
+1.11 (UnixLib 5.0.3.7), 1.12 (UnixLib 5.0.3.9), 1.13 (UnixLib 5.0.3.10) and
+1.14 (UnixLib 5.0.3.12) have their own;
 1.11.1 to 1.11.3 use 1.11's.
 
 **Prebuilt** (a few minutes):
@@ -62,10 +62,10 @@ make prebuilt
 
 This downloads the tarball from the GitHub release, checks its sha256 and
 unpacks it into `toolchain/env`. If you already have the tarball:
-`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.13-x86_64-linux.tar.xz`.
+`toolchain/install-prebuilt.sh path/to/riscos-crossdev-toolchain-1.14-x86_64-linux.tar.xz`.
 
 The optional GCC 16 toolchain is a separate tarball on the same release
-(`riscos-crossdev-toolchain-gcc16-1.13-x86_64-linux.tar.xz`): see
+(`riscos-crossdev-toolchain-gcc16-1.14-x86_64-linux.tar.xz`): see
 [GCC16.md](GCC16.md).
 
 **From source** (an hour or more; about 5 GB of disk while it builds):
@@ -98,7 +98,7 @@ The toolchain can live anywhere. Set `RISCOS_TOOLCHAIN` to its directory,
 for example to share one copy between several checkouts:
 
 ```sh
-export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.13
+export RISCOS_TOOLCHAIN=$HOME/riscos-toolchain-1.14
 make prebuilt       # installs there
 ```
 

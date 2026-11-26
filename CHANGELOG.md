@@ -1,5 +1,35 @@
 # Changes
 
+## 1.14
+
+- **A new toolchain, 1.14, with UnixLib 5.0.3.12** (was 5.0.3.10), from
+  riscos-unixlib: 5.0.3.11's fixes and speed-ups, and 5.0.3.12's word-aligned
+  data. Rebuild to pick it up; everything links unchanged.
+  - **`__thread` and C++ `thread_local` are one per thread.** In a static
+    program that made threads, they were shared by every thread unless it
+    happened to call `pthread_cancel`. Check threaded ports that set one
+    in one thread and read it in another.
+  - **`memcpy` and `setjmp` no longer die on a fresh stack page**
+    ("ARMEABISupport could not handle an abort").
+  - Thread fixes: a thread exiting with thread-specific values no longer
+    races `malloc`; `pthread_suspend_thread`, `pthread_rwlock_init`,
+    `pthread_once` and timed condition waits fixed. `socketpair` can't
+    hang, `bcopy` copies the right way, `scanf` takes `ll`, `hh`, `j`,
+    `z` and `t`, `fread`/`fwrite` take very large counts, `.fini_array`
+    runs at exit, and `mkdtemp` is new.
+  - **`sysconf(_SC_NPROCESSORS_ONLN)` is 1** (or `UnixLib$Processors`)
+    for code built with the new headers; it was 2048. Set
+    `UnixLib$Processors` in `!Run` if a port wants more worker threads.
+  - **Faster** on a Pi 4: `strstr` about 8 times, `memcmp` and
+    `strcasecmp` 4 times, `strcmp`, `strncpy`, `strrchr` 2 to 3 times,
+    `pthread_getspecific` (and `thread_local`) 15 times; base-10
+    `strtol`/`atoi` twice.
+  - **UnixLib aligns its own data now** (5.0.3.12), so the toolchain build
+    no longer adds the `.balign 4` that 1.13 did. The check after the build
+    stays, and the library is the same either way.
+- **The optional GCC 16 toolchain, 1.14,** links the same UnixLib 5.0.3.12.
+  The compiler is unchanged from 1.13.
+
 ## 1.13
 
 - **Programs no longer risk aborting at start-up on a Pi.** UnixLib's

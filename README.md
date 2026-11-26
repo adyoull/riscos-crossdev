@@ -10,7 +10,7 @@ layers, each catching what the one before it can't:
 
 | Layer | What it is | What it catches |
 |---|---|---|
-| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.3.10, built from source; programs are static, and `elf2aif` turns the ELF into an Absolute (AIF) file, or *mixed* (UnixLib linked in, other libraries shared: [docs/MIXED.md](docs/MIXED.md)) | Doesn't compile or link |
+| 1. Cross-compiler | GCCSDK GCC 10.2 (`arm-riscos-gnueabihf`) with UnixLib 5.0.3.12, built from source; programs are static, and `elf2aif` turns the ELF into an Absolute (AIF) file, or *mixed* (UnixLib linked in, other libraries shared: [docs/MIXED.md](docs/MIXED.md)) | Doesn't compile or link |
 | 2. Checks | Run on every build: static linking, stack probes, unaligned casts, FPU level, UnixLib consistency | Code that builds, but aborts or hangs on RISC OS |
 | 3. Fake RISC OS | Your RISC OS-specific C, compiled for Linux against C fakes of the SWIs it calls | Wrong SWI use and logic errors, in a debugger, in seconds |
 | 4. QEMU user mode | Your portable code as real ARM code, on a QEMU patched to trap unaligned accesses like RISC OS, emulating a Cortex-A8 (VFPv3). Unicorn for module and assembler routines | Alignment aborts, VFPv4-only instructions, ARM code-generation bugs |
@@ -92,7 +92,7 @@ The devkit adds six more for OpenGL, OpenGL ES, SDL2 and OpenAL
 | `docs/` | Setup, testing, RISC OS rules, testing on a Pi |
 
 The large pieces are linked, not copied: UnixLib comes from
-[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.10; an unofficial fork of GCCSDK's UnixLib)
+[riscos-unixlib](https://github.com/adyoull/riscos-unixlib) (tag v5.0.3.12; an unofficial fork of GCCSDK's UnixLib)
 and is fetched by checksum. So is the devkit for OpenGL, EGL, SDL2, OpenAL
 and GLU, from [riscos-mesa](https://github.com/adyoull/riscos-mesa)
 (release 20.3.5-17, `make devkit`; see docs/SETUP.md).
