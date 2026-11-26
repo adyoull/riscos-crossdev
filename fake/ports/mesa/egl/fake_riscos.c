@@ -50,6 +50,8 @@ static int wimp_created[64], wimp_num_created;     /* windows in creation order 
 
 static _kernel_oserror err = { 1, "fake error" };
 static int clip[4];                  /* graphics window, OS units x0,y0,x1,y1 (excl.) */
+unsigned int fake_gcol;              /* ColourTrans_SetGCOL's colour, &BBGGRR */
+int fake_gcols, fake_fills;          /* ColourTrans_SetGCOL calls, OS_Plot rectangle fills */
 
 /* A 32bpp mode selector like OS_ScreenMode 1 would return. */
 static int screen_selector[16];
@@ -494,6 +496,36 @@ static _kernel_oserror *swi(int no, _kernel_swi_regs *in, _kernel_swi_regs *out)
         r.r[2] = (int) strlen(v);
         break;
     }
+    case 0x40743:   /* ColourTrans_SetGCOL: r0 = &BBGGRR00, the graphics foreground */
+        fake_gcol = (unsigned int) r.r[0] >> 8;
+        fake_gcols++;
+        break;
+    case 0x45: {    /* OS_Plot: 4 move, 101 rectangle fill (absolute, OS units, inclusive) */
+        static int last_x, last_y;
+        if (r.r[0] == 4) { last_x = r.r[1]; last_y = r.r[2]; break; }
+        if (r.r[0] == 96 + 5) {
+            int x0 = last_x < r.r[1] ? last_x : r.r[1], x1 = last_x < r.r[1] ? r.r[1] : last_x;
+            int y0 = last_y < r.r[2] ? last_y : r.r[2], y1 = last_y < r.r[2] ? r.r[2] : last_y;
+            unsigned int p = fake_gcol;
+            int x, y;
+            if (fake_screen.flags & 0x4000)
+                p = (p & 0xFF00FF00u) | ((p >> 16) & 0xFF) | ((p & 0xFF) << 16);
+            fake_fills++;
+            for (y = y0 >> fake_screen.yeig; y <= y1 >> fake_screen.yeig; y++) {
+                int oy = y << fake_screen.yeig;
+                if (y < 0 || y >= fake_screen.h || oy < clip[1] || oy >= clip[3]) continue;
+                for (x = x0 >> fake_screen.xeig; x <= x1 >> fake_screen.xeig; x++) {
+                    int ox = x << fake_screen.xeig;
+                    if (x < 0 || x >= fake_screen.w || ox < clip[0] || ox >= clip[2]) continue;
+                    fake_screen.mem[(size_t) (fake_screen.h - 1 - y) * (fake_screen.line_length / 4) + x] = p;
+                }
+            }
+            last_x = r.r[1]; last_y = r.r[2];
+            break;
+        }
+        e = error("OS_Plot code not faked");
+        break;
+    }
     case 0x24:      /* OS_SetVarVal (r4 = 4, literal string): into the host's environment */
         if (r.r[4] != 4 || r.r[2] < 0) { e = error("SetVarVal type not faked"); break; }
         {
@@ -653,3 +685,143 @@ void fake_reset_clip(void)
 {
     full_clip();
 }
+
+#ifndef FAKE_NO_R3D     /* r3d_e2e.c links RISC3D's real client instead */
+/* ------------------------------------------------------------------ */
+/* RISC3D, faked (egl/parts/risc3d.c): off unless fake_r3d_on is set.  */
+/* A context remembers its API, surface size and clear colour; its    */
+/* "frame" is the clear colour, given out by r3d_swap as &BBGGRR.      */
+
+#include "r3d.h"
+/* GL's types and the two names used, without GL/gl.h (not every harness
+   that builds this file has Mesa's headers) */
+#define FR_RENDERER 0x1F01
+#define FR_VERSION  0x1F02
+#define FR_EXTENSIONS 0x1F03
+
+int fake_r3d_flags;     /* RISC3D_Info r4: 2 = the driver draws in software */
+int fake_r3d_on, fake_r3d_fail, fake_r3d_live, fake_r3d_finishes, fake_r3d_swaps,
+    fake_r3d_overlapped, fake_r3d_tex_w, fake_r3d_tex_h;
+unsigned int fake_r3d_tex_first;
+struct r3d_context { int gl; unsigned int clear, prev; int w, h; };
+static struct r3d_context *fr_cur;
+
+int r3d_available(void) { return fake_r3d_on && !getenv("RISC3D$Disable"); }
+static struct r3d_context *fr_new(int gl)
+{
+    struct r3d_context *c;
+    if (fake_r3d_fail) return NULL;
+    c = (struct r3d_context *) calloc(1, sizeof *c);
+    c->gl = gl;
+    fake_r3d_live++;
+    return c;
+}
+struct r3d_context *r3d_create(void) { return fr_new(0); }
+struct r3d_context *r3d_create_gl(void) { return fr_new(1); }
+int r3d_driver_flags(void) { return fake_r3d_on ? fake_r3d_flags : -1; }
+int fake_r3d_no_es1;    /* a rol-3d older than 0.4: no GLES 1.1 */
+struct r3d_context *r3d_create_es1(void) { return fake_r3d_no_es1 ? NULL : fr_new(2); }
+/* RISC3D 0.5: up to 3.1 (fake_r3d_max, as 10 * major + minor: 31) */
+int fake_r3d_max = 31, fake_r3d_versioned;
+struct r3d_context *r3d_create_version(int api, int major, int minor)
+{
+    (void) api;
+    if (10 * major + minor > fake_r3d_max) return NULL;
+    fake_r3d_versioned++;
+    return fr_new(api == 1);
+}
+void r3d_make_current(struct r3d_context *c) { fr_cur = c; }
+void r3d_destroy(struct r3d_context *c) { if (fr_cur == c) fr_cur = NULL; free(c); fake_r3d_live--; }
+void r3d_surface(int w, int h) { if (fr_cur) { fr_cur->w = w; fr_cur->h = h; } }
+static int fr_frame(void *pixels, size_t bytes, unsigned int v)
+{
+    size_t i;
+    if (!fr_cur || bytes != (size_t) fr_cur->w * fr_cur->h * 4) return -1;
+    for (i = 0; i < bytes / 4; i++) ((unsigned int *) pixels)[i] = v;
+    return (int) bytes;
+}
+int r3d_swap(void *pixels, size_t bytes) { fake_r3d_swaps++; return fr_frame(pixels, bytes, fr_cur ? fr_cur->clear : 0); }
+int r3d_swap_overlapped(void *pixels, size_t bytes)
+{   /* the frame before (the first time, this one) */
+    unsigned int v;
+    if (!fr_cur) return -1;
+    fake_r3d_overlapped++;
+    v = fake_r3d_overlapped == 1 ? fr_cur->clear : fr_cur->prev;
+    fr_cur->prev = fr_cur->clear;
+    return fr_frame(pixels, bytes, v);
+}
+void r3d_flush(void) {}
+/* the display plane (RISC3D 0.2): off unless fake_r3d_plane is set;
+   fake_r3d_plane_stop makes the next r3d_swap_overlay fail */
+int fake_r3d_plane, fake_r3d_plane_stop, fake_r3d_places, fake_r3d_plane_frames, fake_r3d_place[4];
+int r3d_overlay(int x, int y, int w, int h, unsigned *key)
+{
+    if (!fr_cur) return -1;
+    fake_r3d_places++;
+    fake_r3d_place[0] = x; fake_r3d_place[1] = y; fake_r3d_place[2] = w; fake_r3d_place[3] = h;
+    if (w == 0) return 1;
+    if (!fake_r3d_plane) return 0;
+    *key = 0x080008;
+    return 1;
+}
+int r3d_swap_overlay(void)
+{
+    if (!fr_cur) return -1;
+    if (fake_r3d_plane_stop) { fake_r3d_plane_stop = 0; return -1; }
+    fake_r3d_plane_frames++;
+    return 0;
+}
+const char *r3d_error(void) { return fake_r3d_fail ? "fake RISC3D: no context" : NULL; }
+
+static unsigned char fr_byte(float f) { return f <= 0 ? 0 : f >= 1 ? 255 : (unsigned char) (f * 255.0f + 0.5f); }
+static void fr_ClearColor(float r, float g, float b, float a)
+{ (void) a; if (fr_cur) fr_cur->clear = fr_byte(r) | fr_byte(g) << 8 | (unsigned int) fr_byte(b) << 16; }
+static void fr_Clear(unsigned int m) { (void) m; }
+static void fr_Finish(void) { fake_r3d_finishes++; }
+static const unsigned char *fr_GetString(unsigned int n)
+{ return (const unsigned char *) (n == FR_EXTENSIONS ? "GL_ARB_multitexture GL_EXT_bgra" : n == FR_RENDERER ? "fake RISC3D" : n == FR_VERSION ? (fr_cur && !fr_cur->gl ? "OpenGL ES 2.0 fake" : "2.1 fake") : ""); }
+static void fr_PixelStorei(unsigned int p, int v) { (void) p; (void) v; }
+static void fr_TexImage2D(unsigned int t, int l, int i, int w, int h, int b, unsigned int f, unsigned int ty, const void *p)
+{ (void) t; (void) l; (void) i; (void) b; (void) f; (void) ty; fake_r3d_tex_w = w; fake_r3d_tex_h = h; fake_r3d_tex_first = p ? *(const unsigned int *) p : 0; }
+#define FR(n) { "gl" #n, (void (*)(void)) fr_##n }
+const struct r3d_gl_function r3d_gl_functions[] = {
+    FR(ClearColor), FR(Clear), FR(Finish), FR(GetString), FR(PixelStorei), FR(TexImage2D),
+    { NULL, NULL }
+};
+/* osmesa/r3d_switch.h's (the switch itself is in the real libOSMesa) */
+const struct r3d_gl_function *r3d_functions(void) { return r3d_gl_functions; }
+int r3d_in_program(void) { return 0; }
+int r3d_draw_into(void *pixels, int row_bytes, int width, int height)
+{ (void) pixels; (void) row_bytes; (void) width; (void) height; return 0; }
+int r3d_in_place(const void *pixels) { (void) pixels; return 0; }
+/* the GPU library's sharing (fake_r3d_share: as on a native Pi 4) */
+int fake_r3d_share, fake_r3d_shared;
+int r3d_can_share(void) { return fake_r3d_share; }
+struct r3d_context *r3d_create_shared(int api, int major, int minor, struct r3d_context *share)
+{
+    struct r3d_context *c;
+    (void) major; (void) minor;
+    if (!fake_r3d_share || !share) return NULL;
+    c = fr_new(api == R3D_API_GL ? 1 : api == R3D_API_GLES1 ? 2 : 0);
+    if (c) fake_r3d_shared++;
+    return c;
+}
+/* the GPU library's images over the program's memory (fake_r3d_image: as
+   on a native Pi 4); fake_r3d_fail makes it refuse */
+int fake_r3d_image, fake_r3d_images, fake_r3d_image_rb, fake_r3d_image_target = -1;
+unsigned fake_r3d_image_fourcc;
+void *fake_r3d_image_last;
+int r3d_can_image(void) { return fake_r3d_image; }
+void *r3d_image_create(void *pixels, int row_bytes, int width, int height, unsigned fourcc)
+{
+    (void) pixels; (void) width; (void) height;
+    if (!fake_r3d_image || fake_r3d_fail) return NULL;
+    fake_r3d_image_rb = row_bytes;
+    fake_r3d_image_fourcc = fourcc;
+    fake_r3d_images++;
+    return malloc(4);
+}
+void r3d_image_destroy(void *image) { if (image) { fake_r3d_images--; free(image); } }
+void r3d_image_target(int renderbuffer, unsigned target, void *image)
+{ (void) target; fake_r3d_image_target = renderbuffer; fake_r3d_image_last = image; }
+#endif /* FAKE_NO_R3D */
