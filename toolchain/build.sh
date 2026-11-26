@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build the RISC OS cross toolchain from source into $RISCOS_TOOLCHAIN
 # (default toolchain/env): GCCSDK GCC 10.2.0 for arm-riscos-gnueabihf,
-# binutils 2.30, UnixLib 5.0.3.10, the PThreadTicker module and elf2aif.
+# binutils 2.30, UnixLib 5.0.3.12, the PThreadTicker module and elf2aif.
 # Static linking only: there are no shared target libraries, and links are
 # static by default.
 #
@@ -58,22 +58,10 @@ unpack_gccsdk() {
   # in 5.0.3.6: semaphores (sem_timedwait, a blocking sem_wait, sem_post in
   # signal handlers).
   patch -d gccsdk -p1 -s < "$UNIXLIB_DIFF"
-  # Word data must be word-aligned (riscos-crossdev 1.13). Several of
-  # UnixLib's assembler files start .data with no alignment directive, so
-  # the object's .data has alignment 1 and the linker may put it at any
-  # byte address: in Groove 0.2 to 0.4.2 UnixLib's own start-up then read
-  # __riscosify_control_internal from an address ending in 6 and aborted
-  # on a Pi with alignment exceptions on, the RISC OS 5 default (Geofrey
-  # Baxendale's report; found by the Groove port). RISC OS on Linux doesn't
-  # check alignment. A .balign 4 after every bare .data (in crt0.s and
-  # gcrt0.s too) costs at most 3 bytes of padding each. checks/
-  # check-data-align.py checks the result after the build.
-  n=$(grep -rlE '^[[:space:]]*\.data[[:space:]]*(@.*)?$' --include='*.s' --include='*.S' \
-        gccsdk/gcc4/recipe/files/gcc/libunixlib | wc -l)
-  grep -rlE '^[[:space:]]*\.data[[:space:]]*(@.*)?$' --include='*.s' --include='*.S' \
-      gccsdk/gcc4/recipe/files/gcc/libunixlib |
-    xargs -r sed -i -E 's/^([[:space:]]*)\.data[[:space:]]*(@.*)?$/&\n\1.balign 4/'
-  [ "$n" -ge 8 ] || { echo "UnixLib's .data alignment fix found only $n files (expected 8 or more)" >&2; exit 1; }
+  # Word data must be word-aligned: UnixLib 5.0.3.12 and later align their
+  # assembler's .data themselves (1.13 added a .balign here for 5.0.3.10;
+  # in Groove 0.2 to 0.4.2 UnixLib's start-up read a misaligned word and
+  # aborted on a Pi). check_unixlib_align checks the result after the build.
   # Static only (riscos-crossdev 1.3). RISC OS programs are linked
   # statically; GCCSDK's shared libraries need !SharedLibs' ELF loader. A
   # link without -static used to pick libunixlib.so, libstdc++.so and libm.so
